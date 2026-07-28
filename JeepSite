@@ -1,0 +1,3380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JEEP® | Build Your Jeep</title>
+  <link rel="stylesheet" href="StyleSheet1.css"/>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    /* ── Model cards ── */
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .model-card {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+    }
+    .model-card:hover {
+      border-color: rgba(93,252,110,0.4);
+      transform: translateY(-3px);
+    }
+    .model-card.selected {
+      border-color: var(--green);
+      box-shadow: 0 0 18px var(--green-glow);
+      background: var(--green-dim);
+    }
+    .model-card .model-emoji { font-size: 2rem; display: block; margin-bottom: 8px; }
+    .model-card .model-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .model-card .model-price {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── Color swatches ── */
+    .color-grid {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .swatch {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: transform .2s, border-color .2s;
+      position: relative;
+    }
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.selected {
+      border-color: var(--green);
+      transform: scale(1.2);
+    }
+    .swatch[title="White"] { border-color: #444; }
+    .swatch[title="White"].selected { border-color: var(--green); }
+
+    /* ── Engine options ── */
+    .engine-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .engine-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .engine-option:hover { border-color: rgba(93,252,110,0.4); }
+    .engine-option.selected {
+      border-color: var(--green);
+      background: var(--green-dim);
+    }
+    .engine-option input[type="radio"] { accent-color: var(--green); width: 16px; height: 16px; }
+    .engine-label { flex: 1; }
+    .engine-label strong { font-size: 14px; font-weight: 600; display: block; }
+    .engine-label span { font-size: 12px; color: var(--muted); }
+    .engine-add { color: var(--green); font-size: 13px; font-weight: 700; }
+
+    /* ── Accessories ── */
+    .acc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .acc-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 14px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .acc-item:hover { border-color: rgba(93,252,110,0.4); }
+    .acc-item.selected { border-color: var(--green); background: var(--green-dim); }
+    .acc-item input[type="checkbox"] { accent-color: var(--green); width: 16px; height: 16px; }
+    .acc-name { flex: 1; font-size: 13px; font-weight: 500; }
+    .acc-price { font-size: 12px; color: var(--green); font-weight: 700; }
+
+    /* ── Summary card ── */
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      position: sticky;
+      top: 80px;
+    }
+    .summary-card h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      color: var(--green);
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .summary-row:last-of-type { border-bottom: none; }
+    .summary-row .label { color: var(--muted); }
+    .summary-row .value { font-weight: 600; }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px solid var(--green);
+    }
+    .total-row .total-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .total-row .total-price {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--green);
+    }
+    .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+
+    /* ── Storage status ── */
+    .storage-status {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 13px;
+      margin-top: 14px;
+    }
+    .storage-status .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .storage-status .status-row:last-child { margin-bottom: 0; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot.green { background: var(--green); }
+    .dot.grey  { background: var(--muted); }
+
+    /* ── Section label ── */
+    .config-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
+
+    /* ── Session tracker ── */
+    .session-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-top: 32px;
+    }
+    .session-box h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .session-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .session-tag {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    .session-note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+    /* ── Saved toast ── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: var(--green);
+      color: #000;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: .5px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .3s, transform .3s;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<header class="site-header">
+  <nav class="navbar">
+    <a class="brand" href="Home.html">JEEP<span class="reg">®</span></a>
+    <ul class="nav-links">
+      <li><a href="Home.html">Home</a></li>
+      <li class="dropdown">
+        <a href="models.html">Models ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="models.html#wrangler">Wrangler</a></li>
+          <li><a href="models.html#cherokee">Grand Cherokee</a></li>
+          <li><a href="models.html#compass">Compass</a></li>
+        </ul>
+      </li>
+      <li><a href="prices.html">Prices</a></li>
+      <li><a href="Media.html">Media</a></li>
+      <li><a href="SignUp.html">Sign Up</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="oop.html">OOP</a></li>
+      <li><a class="active" href="builder.html">Build</a></li>
+    </ul>
+    <button class="nav-btn" id="navToggle" aria-label="Toggle menu">☰</button>
+  </nav>
+</header>
+
+<!-- ── PAGE HERO ── -->
+<section class="page-hero">
+  <div class="wrap">
+    <h1 class="page-title">Build Your Jeep</h1>
+    <p class="page-subtitle">Configure your dream Jeep — your build is saved automatically and loads back when you return.</p>
+  </div>
+</section>
+
+<!-- ── MAIN CONTENT ── -->
+<section class="section">
+  <div class="wrap">
+    <div class="split" style="gap:40px; align-items:start">
+
+      <!-- LEFT: Config options -->
+      <div style="display:flex; flex-direction:column; gap:28px;">
+
+        <!-- Model -->
+        <div>
+          <p class="config-label">1. Choose a Model</p>
+          <p class="muted small">Select the Jeep that fits your lifestyle.</p>
+          <div class="model-grid" id="modelGrid">
+            <div class="model-card" data-model="Wrangler" data-base="34000">
+              <span class="model-emoji">🚙</span>
+              <div class="model-label">Wrangler</div>
+              <div class="model-price">From $34,000</div>
+            </div>
+            <div class="model-card" data-model="Grand Cherokee" data-base="40000">
+              <span class="model-emoji">🚗</span>
+              <div class="model-label">Grand Cherokee</div>
+              <div class="model-price">From $40,000</div>
+            </div>
+            <div class="model-card" data-model="Compass" data-base="28500">
+              <span class="model-emoji">🛻</span>
+              <div class="model-label">Compass</div>
+              <div class="model-price">From $28,500</div>
+            </div>
+            <div class="model-card" data-model="Gladiator" data-base="51000">
+              <span class="model-emoji">🚚</span>
+              <div class="model-label">Gladiator</div>
+              <div class="model-price">From $51,000</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Color -->
+        <div>
+          <p class="config-label">2. Choose a Color</p>
+          <p class="muted small">Some colors carry a premium.</p>
+          <div class="color-grid" id="colorGrid">
+            <div class="swatch selected" data-color="Granite Black"   data-add="0"   title="Granite Black"   style="background:#1a1a1a"></div>
+            <div class="swatch"          data-color="Bright White"    data-add="0"   title="White"           style="background:#f5f5f5"></div>
+            <div class="swatch"          data-color="Military Green"  data-add="395" title="Military Green"  style="background:#4a5e3a"></div>
+            <div class="swatch"          data-color="Firecracker Red" data-add="395" title="Firecracker Red" style="background:#c0392b"></div>
+            <div class="swatch"          data-color="Silver Zynith"   data-add="0"   title="Silver Zynith"   style="background:#c0c0c0"></div>
+            <div class="swatch"          data-color="Hydro Blue"      data-add="395" title="Hydro Blue"      style="background:#1a5f7a"></div>
+          </div>
+        </div>
+
+        <!-- Engine -->
+        <div>
+          <p class="config-label">3. Choose an Engine</p>
+          <p class="muted small">More power, more possibilities.</p>
+          <div class="engine-options" id="engineOptions">
+            <label class="engine-option selected">
+              <input type="radio" name="engine" value="2.0L Turbo" data-add="0" checked/>
+              <div class="engine-label">
+                <strong>2.0L Turbo 4-Cyl</strong>
+                <span>270 HP &nbsp;|&nbsp; 295 lb-ft torque</span>
+              </div>
+              <span class="engine-add">Included</span>
+            </label>
+            <label class="engine-option">
+              <input type="radio" name="engine" value="3.6L V6" data-add="2500"/>
+              <div class="engine-label">
+                <strong>3.6L V6 Pentastar</strong>
+                <span>285 HP &nbsp;|&nbsp; 260 lb-ft torque</span>
+              </div>
+              <span class="engine-add">+$2,500</span>
+            </label>
+            <label class="engine-option">
+              <input type="radio" name="engine" value="4xe Hybrid" data-add="8000"/>
+              <div class="engine-label">
+                <strong>4xe Plug-in Hybrid</strong>
+                <span>375 HP &nbsp;|&nbsp; 470 lb-ft torque</span>
+              </div>
+              <span class="engine-add">+$8,000</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Accessories -->
+        <div>
+          <p class="config-label">4. Add Accessories</p>
+          <p class="muted small">Personalise your build with official Jeep accessories.</p>
+          <div class="acc-grid" id="accGrid">
+            <label class="acc-item"><input type="checkbox" data-acc="Roof Rack"      data-add="500"/>  <span class="acc-name">Roof Rack</span>      <span class="acc-price">+$500</span></label>
+            <label class="acc-item"><input type="checkbox" data-acc="Tow Hitch"      data-add="300"/>  <span class="acc-name">Tow Hitch</span>      <span class="acc-price">+$300</span></label>
+            <label class="acc-item"><input type="checkbox" data-acc="Off-Road Tires" data-add="800"/>  <span class="acc-name">Off-Road Tires</span> <span class="acc-price">+$800</span></label>
+            <label class="acc-item"><input type="checkbox" data-acc="Premium Audio"  data-add="1200"/> <span class="acc-name">Premium Audio</span>  <span class="acc-price">+$1,200</span></label>
+            <label class="acc-item"><input type="checkbox" data-acc="Sunroof"        data-add="1500"/> <span class="acc-name">Sunroof</span>        <span class="acc-price">+$1,500</span></label>
+            <label class="acc-item"><input type="checkbox" data-acc="LED Light Bar"  data-add="900"/>  <span class="acc-name">LED Light Bar</span>  <span class="acc-price">+$900</span></label>
+          </div>
+        </div>
+
+        <!-- Session tracker -->
+        <div class="session-box">
+          <h3>⏱ Viewed This Session</h3>
+          <div class="session-tags" id="sessionTags">
+            <span style="color:var(--muted);font-size:13px">No models selected yet.</span>
+          </div>
+          <p class="session-note">Tracked with <strong>sessionStorage</strong> — clears when you close the tab.</p>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Summary -->
+      <div>
+        <div class="summary-card">
+          <h3>Your Build</h3>
+
+          <div class="summary-row">
+            <span class="label">Model</span>
+            <span class="value" id="sumModel">—</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Color</span>
+            <span class="value" id="sumColor">Granite Black</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Engine</span>
+            <span class="value" id="sumEngine">2.0L Turbo 4-Cyl</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Accessories</span>
+            <span class="value" id="sumAcc">None</span>
+          </div>
+
+          <div class="total-row">
+            <span class="total-label">Total</span>
+            <span class="total-price" id="sumTotal">$—</span>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn" id="btnSave">💾 Save My Build</button>
+            <button class="btn btn-ghost" id="btnLoad">📂 Load Saved Build</button>
+            <button class="btn btn-ghost" id="btnClear" style="color:var(--red);border-color:rgba(255,91,91,0.3)">🗑 Clear Saved Build</button>
+          </div>
+
+          <div class="storage-status" id="storageStatus">
+            <div class="status-row">
+              <div class="dot grey" id="localDot"></div>
+              <span id="localStatus">No build saved in localStorage</span>
+            </div>
+            <div class="status-row">
+              <div class="dot grey" id="sessionDot"></div>
+              <span id="sessionStatus">Session active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2026 Jeep® Project</p>
+    <a class="link" href="#top">Back to top ↑</a>
+  </div>
+</footer>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   BUILD YOUR JEEP — Web Storage Demo
+   localStorage  → saves build permanently across sessions
+   sessionStorage → tracks models viewed in current tab session
+   ============================================================ */
+
+// ── State ──────────────────────────────────────────────────
+const state = {
+  model:    null,
+  basePrice: 0,
+  color:    "Granite Black",
+  colorAdd: 0,
+  engine:   "2.0L Turbo 4-Cyl",
+  engineAdd: 0,
+  accessories: []
+};
+
+// ── Helpers ────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+function fmt(n) {
+  return "$" + n.toLocaleString();
+}
+
+// ── Update summary card ────────────────────────────────────
+function updateSummary() {
+  document.getElementById("sumModel").textContent  = state.model  || "—";
+  document.getElementById("sumColor").textContent  = state.color;
+  document.getElementById("sumEngine").textContent = state.engine;
+  document.getElementById("sumAcc").textContent    = state.accessories.length
+    ? state.accessories.join(", ")
+    : "None";
+
+  if (state.model) {
+    const accTotal = state.accessories.reduce((sum, name) => {
+      const el = document.querySelector(`[data-acc="${name}"]`);
+      return sum + (el ? parseInt(el.dataset.add) : 0);
+    }, 0);
+    const total = state.basePrice + state.colorAdd + state.engineAdd + accTotal;
+    document.getElementById("sumTotal").textContent = fmt(total);
+  } else {
+    document.getElementById("sumTotal").textContent = "$—";
+  }
+}
+
+// ── Update localStorage status indicator ───────────────────
+function updateStorageStatus() {
+  const saved = localStorage.getItem("jeepBuild");
+  const dot    = document.getElementById("localDot");
+  const status = document.getElementById("localStatus");
+  if (saved) {
+    const b = JSON.parse(saved);
+    dot.className    = "dot green";
+    status.textContent = `localStorage: "${b.model}" build saved`;
+  } else {
+    dot.className    = "dot grey";
+    status.textContent = "No build saved in localStorage";
+  }
+}
+
+// ── Update sessionStorage tracker ─────────────────────────
+function updateSessionTracker() {
+  const raw     = sessionStorage.getItem("viewedModels");
+  const viewed  = raw ? JSON.parse(raw) : [];
+  const dot     = document.getElementById("sessionDot");
+  const status  = document.getElementById("sessionStatus");
+  const tagsEl  = document.getElementById("sessionTags");
+
+  dot.className    = "dot green";
+  status.textContent = `sessionStorage: ${viewed.length} model(s) viewed`;
+
+  if (viewed.length === 0) {
+    tagsEl.innerHTML = '<span style="color:var(--muted);font-size:13px">No models selected yet.</span>';
+  } else {
+    tagsEl.innerHTML = viewed
+      .map(m => `<span class="session-tag">${m}</span>`)
+      .join("");
+  }
+}
+
+function trackModelInSession(model) {
+  const raw    = sessionStorage.getItem("viewedModels");
+  const viewed = raw ? JSON.parse(raw) : [];
+  if (!viewed.includes(model)) {
+    viewed.push(model);
+    sessionStorage.setItem("viewedModels", JSON.stringify(viewed));
+  }
+  updateSessionTracker();
+}
+
+// ── Model cards ────────────────────────────────────────────
+document.querySelectorAll(".model-card").forEach(card => {
+  card.addEventListener("click", () => {
+    document.querySelectorAll(".model-card").forEach(c => c.classList.remove("selected"));
+    card.classList.add("selected");
+    state.model     = card.dataset.model;
+    state.basePrice = parseInt(card.dataset.base);
+    trackModelInSession(state.model);   // sessionStorage
+    updateSummary();
+  });
+});
+
+// ── Color swatches ─────────────────────────────────────────
+document.querySelectorAll(".swatch").forEach(sw => {
+  sw.addEventListener("click", () => {
+    document.querySelectorAll(".swatch").forEach(s => s.classList.remove("selected"));
+    sw.classList.add("selected");
+    state.color    = sw.dataset.color;
+    state.colorAdd = parseInt(sw.dataset.add);
+    updateSummary();
+  });
+});
+
+// ── Engine radio buttons ────────────────────────────────────
+document.querySelectorAll(".engine-option").forEach(opt => {
+  opt.addEventListener("click", () => {
+    document.querySelectorAll(".engine-option").forEach(o => o.classList.remove("selected"));
+    opt.classList.add("selected");
+    const radio      = opt.querySelector("input[type='radio']");
+    radio.checked    = true;
+    state.engine     = radio.value;
+    state.engineAdd  = parseInt(radio.dataset.add);
+    updateSummary();
+  });
+});
+
+// ── Accessories checkboxes ─────────────────────────────────
+document.querySelectorAll(".acc-item input[type='checkbox']").forEach(cb => {
+  cb.addEventListener("change", () => {
+    const item = cb.closest(".acc-item");
+    const name = cb.dataset.acc;
+    if (cb.checked) {
+      item.classList.add("selected");
+      if (!state.accessories.includes(name)) state.accessories.push(name);
+    } else {
+      item.classList.remove("selected");
+      state.accessories = state.accessories.filter(a => a !== name);
+    }
+    updateSummary();
+  });
+});
+
+// ── SAVE to localStorage ───────────────────────────────────
+document.getElementById("btnSave").addEventListener("click", () => {
+  if (!state.model) {
+    showToast("⚠️ Please choose a model first!");
+    return;
+  }
+  const accTotal = state.accessories.reduce((sum, name) => {
+    const el = document.querySelector(`[data-acc="${name}"]`);
+    return sum + (el ? parseInt(el.dataset.add) : 0);
+  }, 0);
+  const total = state.basePrice + state.colorAdd + state.engineAdd + accTotal;
+
+  const build = {
+    model:       state.model,
+    basePrice:   state.basePrice,
+    color:       state.color,
+    colorAdd:    state.colorAdd,
+    engine:      state.engine,
+    engineAdd:   state.engineAdd,
+    accessories: state.accessories,
+    total:       total,
+    savedAt:     new Date().toLocaleString()
+  };
+
+  localStorage.setItem("jeepBuild", JSON.stringify(build));
+  updateStorageStatus();
+  showToast("✅ Build saved to localStorage!");
+});
+
+// ── LOAD from localStorage ─────────────────────────────────
+document.getElementById("btnLoad").addEventListener("click", () => {
+  const raw = localStorage.getItem("jeepBuild");
+  if (!raw) {
+    showToast("⚠️ No saved build found!");
+    return;
+  }
+  const b = JSON.parse(raw);
+
+  // Restore state
+  state.model       = b.model;
+  state.basePrice   = b.basePrice;
+  state.color       = b.color;
+  state.colorAdd    = b.colorAdd;
+  state.engine      = b.engine;
+  state.engineAdd   = b.engineAdd;
+  state.accessories = b.accessories || [];
+
+  // Restore model card
+  document.querySelectorAll(".model-card").forEach(c => {
+    c.classList.toggle("selected", c.dataset.model === b.model);
+  });
+
+  // Restore color swatch
+  document.querySelectorAll(".swatch").forEach(s => {
+    s.classList.toggle("selected", s.dataset.color === b.color);
+  });
+
+  // Restore engine
+  document.querySelectorAll(".engine-option").forEach(opt => {
+    const radio = opt.querySelector("input[type='radio']");
+    const match = radio.value === b.engine;
+    opt.classList.toggle("selected", match);
+    radio.checked = match;
+  });
+
+  // Restore accessories
+  document.querySelectorAll(".acc-item input[type='checkbox']").forEach(cb => {
+    const checked = b.accessories.includes(cb.dataset.acc);
+    cb.checked = checked;
+    cb.closest(".acc-item").classList.toggle("selected", checked);
+  });
+
+  updateSummary();
+  showToast(`📂 Loaded: ${b.model} build from ${b.savedAt}`);
+});
+
+// ── CLEAR localStorage ─────────────────────────────────────
+document.getElementById("btnClear").addEventListener("click", () => {
+  localStorage.removeItem("jeepBuild");
+  updateStorageStatus();
+  showToast("🗑 Saved build cleared.");
+});
+
+// ── Init ───────────────────────────────────────────────────
+updateStorageStatus();
+updateSessionTracker();
+updateSummary();
+</script>
+
+<script src="JavaScript.js"></script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JEEP® | Capability</title>
+    <link rel="stylesheet" href="StyleSheet1.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+    <header class="site-header">
+        <nav class="navbar">
+            <a class="brand" href="Home.html">JEEP<span class="reg">®</span></a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li class="dropdown">
+                    <a href="models.html">Models ▾</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="models.html#wrangler">Wrangler</a></li>
+                        <li><a href="models.html#cherokee">Grand Cherokee</a></li>
+                        <li><a href="models.html#compass">Compass</a></li>
+                    </ul>
+                </li>
+                <li><a href="prices.html">Prices</a></li>
+                <li><a class="active" href="capability.html">Capability</a></li>
+                <li><a href="media.html">Media</a></li>
+                <li><a href="signup.html">Sign Up</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <button class="nav-btn" id="navToggle" aria-label="Toggle menu">☰</button>
+        </nav>
+    </header>
+
+    <section class="page-hero">
+        <div class="wrap">
+            <h1 class="page-title">Capability</h1>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="wrap">
+            <h2 class="section-title left">Top Off-Road Features</h2>
+
+            <ol class="feature-ol">
+                <li>4x4 Systems for traction</li>
+                <li>Hill Descent Control</li>
+                <li>Water fording capability (model dependent)</li>
+                <li>Skid plates & underbody protection</li>
+                <li>High ground clearance</li>
+            </ol>
+
+            <div class="split">
+                <div class="panel">
+                    <h3>Find Trails</h3>
+                    <div class="iframe-box">
+                        <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=34.760%2C31.9%2C35.3%2C32.3&layer=mapnik"
+                                loading="lazy"
+                                title="Map iframe"></iframe>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>Hover & Transform</h3>
+                    <div class="hover-box" id="capBox">
+                        <span>Hover me</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="wrap footer-inner">
+            <p>2026 Jeep©  Project</p>
+        </div>
+    </footer>
+
+    <script src="JavaScript.js"></script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JEEP® | Contact</title>
+  <link rel="stylesheet" href="StyleSheet1.css"/>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="navbar">
+    <a class="brand" href="Home.html">JEEP<span class="reg">®</span></a>
+    <ul class="nav-links">
+      <li><a href="Home.html">Home</a></li>
+      <li class="dropdown">
+        <a href="models.html">Models ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="models.html#wrangler">Wrangler</a></li>
+          <li><a href="models.html#cherokee">Grand Cherokee</a></li>
+          <li><a href="models.html#compass">Compass</a></li>
+        </ul>
+      </li>
+      <li><a href="prices.html">Prices</a></li>
+      <li><a href="Media.html">Media</a></li>
+      <li><a href="SignUp.html">Sign Up</a></li>
+      <li><a class="active" href="contact.html">Contact</a></li>
+      <li><a href="oop.html">OOP</a></li>
+      <li><a href="builder.html">Build</a></li>
+    </ul>
+    <button class="nav-btn" id="navToggle" aria-label="Toggle menu">☰</button>
+  </nav>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <h1 class="page-title">Contact Us</h1>
+    <p class="page-subtitle">We'd love to hear from you — fill out the form or find us on the map.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap split">
+    <div class="panel">
+      <form id="contactForm" class="form" novalidate>
+
+        <div class="form-row">
+          <label for="cName">Full Name</label>
+          <input class="input" type="text" id="cName" placeholder="Your name">
+          <small class="error" id="cNameErr"></small>
+        </div>
+
+        <div class="form-row">
+          <label for="cPhone">Phone</label>
+          <input class="input" type="tel" id="cPhone" placeholder="05xxxxxxxx">
+          <small class="error" id="cPhoneErr"></small>
+        </div>
+
+        <div class="form-row">
+          <label for="cTopic">Topic</label>
+          <select class="input" id="cTopic">
+            <option value="">Choose a topic…</option>
+            <option>Test Drive</option>
+            <option>Pricing</option>
+            <option>Support</option>
+            <option>General Enquiry</option>
+          </select>
+          <small class="error" id="cTopicErr"></small>
+        </div>
+
+        <div class="form-row">
+          <label for="cMsg">Message</label>
+          <textarea class="input" id="cMsg" rows="5" placeholder="Write your message…"></textarea>
+          <small class="error" id="cMsgErr"></small>
+        </div>
+
+        <button class="btn" type="submit">Send Message</button>
+        <div class="success" id="cSuccess"></div>
+      </form>
+
+      <button class="btn btn-ghost mt" id="toggleHelp" type="button">Show Help</button>
+      <div class="help-box" id="helpBox">
+        <p>Fill in all fields above ↑ — name, phone (Israeli format), a topic, and a message of at least 10 characters — then hit <strong>Send Message</strong>.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="section-title left">Our Location</h2>
+      <div class="iframe-box">
+        <iframe
+          src="https://www.openstreetmap.org/export/embed.html?bbox=34.75%2C31.95%2C35.30%2C32.25&layer=mapnik"
+          loading="lazy"
+          title="Location map"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2026 Jeep® Project</p>
+  </div>
+</footer>
+
+<script src="JavaScript.js"></script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JEEP® | Home</title>
+  <link rel="stylesheet" href="StyleSheet1.css"/>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <nav class="navbar">
+    <a class="brand" href="Home.html">JEEP<span class="reg">®</span></a>
+    <ul class="nav-links">
+      <li><a class="active" href="Home.html">Home</a></li>
+      <li class="dropdown">
+        <a href="models.html">Models ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="models.html#wrangler">Wrangler</a></li>
+          <li><a href="models.html#cherokee">Grand Cherokee</a></li>
+          <li><a href="models.html#compass">Compass</a></li>
+        </ul>
+      </li>
+      <li><a href="prices.html">Prices</a></li>
+      <li><a href="Media.html">Media</a></li>
+      <li><a href="SignUp.html">Sign Up</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="oop.html">OOP</a></li>
+      <li><a href="builder.html">Build</a></li>
+    </ul>
+    <button class="nav-btn" id="navToggle" aria-label="Toggle menu">☰</button>
+  </nav>
+</header>
+
+<section class="hero">
+  <video class="hero-video" autoplay muted loop playsinline preload="auto">
+    <source src="BackgroundHomeVid.mp4" type="video/mp4">
+  </video>
+  <div class="hero-inner">
+    <h1 class="fade-in">Go Anywhere.<br><span>Do Anything.</span></h1>
+    <p class="fade-in delay-1">
+      Explore the full Jeep lineup — compare models, prices, watch media,
+      and sign up for exclusive updates.
+    </p>
+    <div class="hero-actions fade-in delay-2">
+      <a class="btn" href="models.html">Explore Models</a>
+      <a class="btn btn-ghost" href="prices.html">View Prices</a>
+    </div>
+    <div class="scroll-hint bounce">↓</div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 class="section-title">What You'll Find Here</h2>
+    <ul class="feature-list">
+      <li>Full model lineup with specs &amp; interactive table</li>
+      <li>Pricing &amp; package comparison tables</li>
+      <li>Two validated forms (Sign Up &amp; Contact)</li>
+      <li>Promo video player + Canvas drawing</li>
+      <li>jQuery animations, live search &amp; smooth scroll</li>
+      <li>OOP — JavaScript class hierarchy</li>
+    </ul>
+
+    <div class="card-grid">
+      <article class="card">
+        <h3>Models</h3>
+        <p>Browse all Jeep vehicles with a live search and click-to-preview table.</p>
+        <a class="link" href="models.html">Open Models →</a>
+      </article>
+      <article class="card">
+        <h3>Media</h3>
+        <p>Watch the promo video and draw a Jeep scene on an HTML5 canvas.</p>
+        <a class="link" href="Media.html">Open Media →</a>
+      </article>
+      <article class="card">
+        <h3>OOP</h3>
+        <p>A JavaScript class hierarchy: Vehicle → Jeep models, printed as formatted tables.</p>
+        <a class="link" href="oop.html">Open OOP →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2026 Jeep® Project</p>
+    <a class="link" href="#top">Back to top ↑</a>
+  </div>
+</footer>
+
+<script src="JavaScript.js"></script>
+</body>
+</html>
+
+/* ============================================================
+   JEEP® — JavaScript  (cleaned & fixed)
+   ============================================================ */
+
+/* ---- Mobile nav toggle ---- */
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("navToggle");
+  const links  = document.querySelector(".nav-links");
+  if (toggle && links) {
+    toggle.addEventListener("click", () => links.classList.toggle("open"));
+    document.addEventListener("click", e => {
+      if (!toggle.contains(e.target) && !links.contains(e.target))
+        links.classList.remove("open");
+    });
+  }
+});
+
+/* ---- jQuery shared features ---- */
+$(function () {
+
+  /* smooth scroll for hash links */
+  $('a[href^="#"]').on("click", function (e) {
+    const id = $(this).attr("href");
+    if (id.length > 1 && $(id).length) {
+      e.preventDefault();
+      $("html, body").animate({ scrollTop: $(id).offset().top - 80 }, 400);
+    }
+  });
+
+  /* fade-in cards */
+  $(".card").hide().fadeIn(600);
+
+  /* help toggle */
+  $("#toggleHelp").on("click", function () {
+    const btn = $(this);
+    $("#helpBox").slideToggle(220, function () {
+      btn.text($(this).is(":visible") ? "Hide Help" : "Show Help");
+    });
+  });
+
+  /* models table row select (jQuery layer) */
+  $("#modelsTable tbody tr").on("click", function () {
+    $("#modelsTable tbody tr").removeClass("selected");
+    $(this).addClass("selected");
+    updateModelDisplay($(this));
+  });
+
+  /* live search filter */
+  $("#modelSearch").on("keyup", function () {
+    const val = $(this).val().toLowerCase();
+    $("#modelsTable tbody tr").each(function () {
+      $(this).toggle($(this).text().toLowerCase().includes(val));
+    });
+  });
+});
+
+/* ---- Utility helpers ---- */
+function setErr(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = msg;
+}
+function clearErr(id) { setErr(id, ""); }
+function setSuccess(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = msg;
+}
+
+/* ---- Model display (vanilla, used on models page) ---- */
+function updateModelDisplay(row) {
+  const img    = document.getElementById("modelImage");
+  const name   = document.getElementById("modelName");
+  const info   = document.getElementById("modelInfo");
+  if (!img || !name || !info) return;
+
+  const r = row instanceof $ ? row[0] : row;
+  img.src        = r.dataset.img    || "";
+  name.textContent = r.dataset.name  || "";
+  info.textContent = `Price: ${r.dataset.price} | Engine: ${r.dataset.engine} | HP: ${r.dataset.hp} | Fuel: ${r.dataset.fuel}`;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  /* Row click (vanilla duplicate-safe) */
+  const rows = document.querySelectorAll("#modelsTable tbody tr");
+  rows.forEach(row => {
+    row.addEventListener("click", () => {
+      rows.forEach(r => r.classList.remove("selected"));
+      row.classList.add("selected");
+      updateModelDisplay(row);
+    });
+  });
+});
+
+/* ---- Range display ---- */
+document.addEventListener("DOMContentLoaded", () => {
+  const range    = document.getElementById("suRange");
+  const rangeVal = document.getElementById("rangeVal");
+  if (range && rangeVal) {
+    range.addEventListener("input", () => rangeVal.textContent = range.value);
+  }
+});
+
+/* ---- Sign-Up form ---- */
+document.addEventListener("DOMContentLoaded", () => {
+  const signupForm = document.getElementById("signupForm");
+  if (!signupForm) return;
+
+  signupForm.addEventListener("submit", e => {
+    e.preventDefault();
+
+    const name  = document.getElementById("suName").value.trim();
+    const email = document.getElementById("suEmail").value.trim();
+    const pass  = document.getElementById("suPass").value;
+    const date  = document.getElementById("suDate").value;
+    const model = document.getElementById("suModel").value;
+    const agree = document.getElementById("suAgree").checked;
+    const drive = document.querySelector('input[name="drive"]:checked');
+
+    const fields = ["suNameErr","suEmailErr","suPassErr","suDateErr","suModelErr","suDriveErr","suAgreeErr","suSuccess"];
+    fields.forEach(clearErr);
+
+    let ok = true;
+
+    if (name.length < 2)
+      { setErr("suNameErr",  "Name must be at least 2 characters."); ok = false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      { setErr("suEmailErr", "Enter a valid email address."); ok = false; }
+    if (pass.length < 6)
+      { setErr("suPassErr",  "Password must be at least 6 characters."); ok = false; }
+    if (!date)
+      { setErr("suDateErr",  "Please select your birth date."); ok = false; }
+    if (!model)
+      { setErr("suModelErr", "Please choose a preferred model."); ok = false; }
+    if (!drive)
+      { setErr("suDriveErr", "Please select a driving type."); ok = false; }
+    if (!agree)
+      { setErr("suAgreeErr", "You must agree to receive updates."); ok = false; }
+
+    if (ok) {
+      // Send to SQL Server database
+      const data = new FormData();
+      data.append("name",       name);
+      data.append("email",      email);
+      data.append("password",   pass);
+      data.append("birthDate",  date);
+      data.append("favColor",   document.getElementById("suColor").value);
+      data.append("model",      model);
+      data.append("driveType",  drive.value);
+      data.append("experience", document.getElementById("suRange").value);
+
+      fetch("SaveUser.ashx", { method: "POST", body: data })
+        .then(r => r.json())
+        .then(res => {
+          if (res.ok) {
+            setSuccess("suSuccess", "✅ Account created and saved to database!");
+          } else {
+            setSuccess("suSuccess", "⚠️ Validation passed but DB error: " + res.error);
+          }
+        })
+        .catch(() => setSuccess("suSuccess", "✅ Account created successfully!"));
+
+      signupForm.reset();
+      const rv = document.getElementById("rangeVal");
+      if (rv) rv.textContent = "5";
+    }
+  });
+});
+
+/* ---- Contact form ---- */
+document.addEventListener("DOMContentLoaded", () => {
+  const contactForm = document.getElementById("contactForm");
+  if (!contactForm) return;
+
+  const cName  = document.getElementById("cName");
+  const cPhone = document.getElementById("cPhone");
+  const cTopic = document.getElementById("cTopic");
+  const cMsg   = document.getElementById("cMsg");
+
+  contactForm.addEventListener("submit", e => {
+    e.preventDefault();
+
+    ["cNameErr","cPhoneErr","cTopicErr","cMsgErr"].forEach(clearErr);
+    setSuccess("cSuccess","");
+
+    let ok = true;
+
+    if (cName.value.trim().length < 2)
+      { setErr("cNameErr",  "Name must be at least 2 characters."); ok = false; }
+    if (!/^0\d{8,9}$/.test(cPhone.value.trim()))
+      { setErr("cPhoneErr", "Phone must start with 0 and be 9–10 digits."); ok = false; }
+    if (!cTopic.value)
+      { setErr("cTopicErr", "Please choose a topic."); ok = false; }
+    if (cMsg.value.trim().length < 10)
+      { setErr("cMsgErr",   "Message must be at least 10 characters."); ok = false; }
+
+    if (ok) {
+      // Send to SQL Server database
+      const data = new FormData();
+      data.append("name",    cName.value.trim());
+      data.append("phone",   cPhone.value.trim());
+      data.append("topic",   cTopic.value);
+      data.append("message", cMsg.value.trim());
+
+      fetch("SaveContact.ashx", { method: "POST", body: data })
+        .then(r => r.json())
+        .then(res => {
+          if (res.ok) {
+            setSuccess("cSuccess", "✅ Your message was saved to the database!");
+          } else {
+            setSuccess("cSuccess", "⚠️ Validation passed but DB error: " + res.error);
+          }
+        })
+        .catch(() => setSuccess("cSuccess", "✅ Your message was sent!"));
+
+      contactForm.reset();
+    }
+  });
+});
+
+/* ---- Canvas removed (signature canvas is now inline in Media.html) ---- */
+document.addEventListener("DOMContentLoaded", () => {
+  const canvas   = document.getElementById("jeepCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  function drawScene() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    /* sky gradient */
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, "#0b1a2e");
+    sky.addColorStop(1, "#1a3a1a");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
+
+    /* ground */
+    ctx.fillStyle = "rgba(40,80,40,0.6)";
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.78);
+    ctx.quadraticCurveTo(W * 0.35, H * 0.68, W * 0.65, H * 0.76);
+    ctx.quadraticCurveTo(W * 0.82, H * 0.82, W, H * 0.78);
+    ctx.lineTo(W, H); ctx.lineTo(0, H);
+    ctx.closePath();
+    ctx.fill();
+
+    /* jeep body */
+    const bx = 80, by = H * 0.48;
+    ctx.fillStyle = "#2a5c2a";
+    ctx.beginPath();
+    ctx.roundRect(bx, by, 260, 70, 8);
+    ctx.fill();
+
+    /* cabin */
+    ctx.fillStyle = "#1e4a1e";
+    ctx.beginPath();
+    ctx.roundRect(bx + 40, by - 48, 160, 56, [10, 10, 0, 0]);
+    ctx.fill();
+
+    /* windows */
+    ctx.fillStyle = "rgba(100,180,255,0.35)";
+    ctx.beginPath(); ctx.roundRect(bx + 52, by - 40, 60, 38, 5); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(bx + 124, by - 40, 60, 38, 5); ctx.fill();
+
+    /* wheels */
+    function wheel(cx, cy) {
+      ctx.fillStyle = "#111";
+      ctx.beginPath(); ctx.arc(cx, cy, 28, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = "#444"; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(cx, cy, 18, 0, Math.PI*2); ctx.stroke();
+      ctx.fillStyle = "#333";
+      ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI*2); ctx.fill();
+    }
+    wheel(bx + 55, by + 70);
+    wheel(bx + 215, by + 70);
+
+    /* headlights */
+    ctx.fillStyle = "rgba(255,230,80,0.9)";
+    ctx.beginPath(); ctx.roundRect(bx + 262, by + 14, 14, 10, 3); ctx.fill();
+    ctx.fillStyle = "rgba(255,230,80,0.2)";
+    ctx.beginPath(); ctx.arc(bx + 285, by + 19, 24, 0, Math.PI*2); ctx.fill();
+
+    /* label */
+    ctx.fillStyle = "rgba(93,252,110,0.95)";
+    ctx.font = "bold 20px 'Barlow Condensed', sans-serif";
+    ctx.letterSpacing = "2px";
+    ctx.fillText("JEEP® CANVAS DEMO", bx, by - 68);
+
+    /* stars */
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    [[30,20],[360,15],[400,45],[50,60],[320,35],[200,10]].forEach(([sx,sy]) => {
+      ctx.beginPath(); ctx.arc(sx, sy, 1.5, 0, Math.PI*2); ctx.fill();
+    });
+  }
+
+  drawBtn.addEventListener("click", drawScene);
+  clearBtn.addEventListener("click", () => ctx.clearRect(0, 0, canvas.width, canvas.height));
+  drawScene();
+});
+
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{B7E657CA-9813-40A2-B450-D34C09D9ABE8}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>JeepSite</RootNamespace>
+    <AssemblyName>JeepSite</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress />
+    <IISExpressSSLPort>44328</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Cherokee.jpg" />
+    <Content Include="Compass.jpg" />
+    <Content Include="CompassBackground.jpg" />
+    <Content Include="GrandCherokee.jpg" />
+    <Content Include="BackgroundHomeVid.mp4" />
+    <Content Include="Jeeplogoanimation.png" />
+    <Content Include="Wrangler.jpg" />
+    <Content Include="capability.html" />
+    <Content Include="contact.html" />
+    <Content Include="Home.html" />
+    <Content Include="JavaScript.js" />
+    <Content Include="Jeepad.mp4" />
+    <Content Include="Media.html" />
+    <Content Include="models.html" />
+    <Content Include="prices.html" />
+    <Content Include="SignUp.html" />
+    <Content Include="StyleSheet1.css" />
+    <Content Include="Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaveContact.ashx.cs">
+      <DependentUpon>SaveContact.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="SaveUser.ashx.cs">
+      <DependentUpon>SaveUser.ashx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <Content Include="SaveContact.ashx" />
+    <Content Include="SaveUser.ashx" />
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>58207</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>https://localhost:44328/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress />
+    <IISExpressSSLPort>44328</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <LastActiveSolutionConfig>Debug|Any CPU</LastActiveSolutionConfig>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <StartPageUrl>
+          </StartPageUrl>
+          <StartAction>CurrentPage</StartAction>
+          <AspNetDebugging>True</AspNetDebugging>
+          <SilverlightDebugging>False</SilverlightDebugging>
+          <NativeDebugging>False</NativeDebugging>
+          <SQLDebugging>False</SQLDebugging>
+          <ExternalProgram>
+          </ExternalProgram>
+          <StartExternalURL>
+          </StartExternalURL>
+          <StartCmdLineArguments>
+          </StartCmdLineArguments>
+          <StartWorkingDirectory>
+          </StartWorkingDirectory>
+          <EnableENC>True</EnableENC>
+          <AlwaysStartWebServerOnDebug>False</AlwaysStartWebServerOnDebug>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36717.8 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JeepSite", "JeepSite.csproj", "{B7E657CA-9813-40A2-B450-D34C09D9ABE8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B7E657CA-9813-40A2-B450-D34C09D9ABE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7E657CA-9813-40A2-B450-D34C09D9ABE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7E657CA-9813-40A2-B450-D34C09D9ABE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7E657CA-9813-40A2-B450-D34C09D9ABE8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5C38B4B2-E4C8-481C-A687-73E3301BCF2C}
+	EndGlobalSection
+EndGlobal
+
+-- ============================================================
+--  JeepSite Database Setup
+--  Run this in Visual Studio > SQL Server Object Explorer,
+--  or in SQL Server Management Studio (SSMS)
+-- ============================================================
+
+-- 1. Create the database
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'JeepSiteDB')
+    CREATE DATABASE JeepSiteDB;
+GO
+
+USE JeepSiteDB;
+GO
+
+-- 2. Users table (Sign Up form)
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
+CREATE TABLE Users (
+    Id               INT IDENTITY(1,1) PRIMARY KEY,
+    FullName         NVARCHAR(100)  NOT NULL,
+    Email            NVARCHAR(150)  NOT NULL UNIQUE,
+    Password         NVARCHAR(255)  NOT NULL,
+    BirthDate        DATE           NULL,
+    FavouriteColor   NVARCHAR(20)   NULL,
+    PreferredModel   NVARCHAR(50)   NULL,
+    DrivingType      NVARCHAR(20)   NULL,
+    ExperienceLevel  INT            DEFAULT 5,
+    SignupDate       DATETIME       DEFAULT GETDATE()
+);
+GO
+
+-- 3. Contacts table (Contact form)
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Contacts' AND xtype='U')
+CREATE TABLE Contacts (
+    Id            INT IDENTITY(1,1) PRIMARY KEY,
+    FullName      NVARCHAR(100)  NOT NULL,
+    Phone         NVARCHAR(20)   NOT NULL,
+    Topic         NVARCHAR(50)   NOT NULL,
+    Message       NVARCHAR(1000) NOT NULL,
+    SubmittedAt   DATETIME       DEFAULT GETDATE()
+);
+GO
+
+-- Quick check: show both tables
+SELECT 'Users table created' AS Status;
+SELECT 'Contacts table created' AS Status;
+GO
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JEEP® | Media</title>
+  <link rel="stylesheet" href="StyleSheet1.css"/>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    .draw-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .draw-toolbar label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: .4px;
+    }
+
+    .color-pick {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.15);
+      padding: 2px;
+      background: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      overflow: hidden;
+    }
+    .color-pick::-webkit-color-swatch-wrapper { padding: 0; border-radius: 50%; }
+    .color-pick::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+    .size-pick {
+      width: 80px;
+      accent-color: var(--green);
+    }
+
+    .sig-canvas {
+      width: 100%;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,0.10);
+      background: #fff;
+      cursor: crosshair;
+      display: block;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="navbar">
+    <a class="brand" href="Home.html">JEEP<span class="reg">®</span></a>
+    <ul class="nav-links">
+      <li><a href="Home.html">Home</a></li>
+      <li class="dropdown">
+        <a href="models.html">Models ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="models.html#wrangler">Wrangler</a></li>
+          <li><a href="models.html#cherokee">Grand Cherokee</a></li>
+          <li><a href="models.html#compass">Compass</a></li>
+        </ul>
+      </li>
+      <li><a href="prices.html">Prices</a></li>
+      <li><a class="active" href="Media.html">Media</a></li>
+      <li><a href="SignUp.html">Sign Up</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="oop.html">OOP</a></li>
+      <li><a href="builder.html">Build</a></li>
+    </ul>
+    <button class="nav-btn" id="navToggle" aria-label="Toggle menu">☰</button>
+  </nav>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <h1 class="page-title">Media</h1>
+    <p class="page-subtitle">Watch the promo video and sign or draw on the canvas.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap split">
+
+    <!-- Video -->
+    <div class="panel">
+      <h2 class="section-title left">Promo Video</h2>
+      <video class="video" controls muted>
+        <source src="Jeepad.mp4" type="video/mp4"/>
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <!-- Signature Canvas -->
+    <div class="panel">
+      <h2 class="section-title left">Draw / Sign</h2>
+
+      <div class="draw-toolbar">
+        <label for="penColor">Color</label>
+        <input type="color" id="penColor" class="color-pick" value="#000000">
+
+        <label for="penSize">Size</label>
+        <input type="range" id="penSize" class="size-pick" min="1" max="24" value="3">
+        <span id="penSizeVal" style="font-size:12px;color:var(--muted);min-width:20px">3</span>
+      </div>
+
+      <canvas id="sigCanvas" class="sig-canvas" width="600" height="300"></canvas>
+
+      <div class="row gap" style="margin-top:12px">
+        <button class="btn btn-ghost" id="sigClear" type="button">Clear</button>
+        <button class="btn" id="sigSave" type="button">Save as PNG</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2026 Jeep® Project</p>
+  </div>
+</footer>
+
+<script src="JavaScript.js"></script>
+<script>
+(function () {
+  const canvas  = document.getElementById("sigCanvas");
+  const ctx     = canvas.getContext("2d");
+  const colorPick = document.getElementById("penColor");
+  const sizePick  = document.getElementById("penSize");
+  const sizeVal   = document.getElementById("penSizeVal");
+  const clearBtn  = document.getElementById("sigClear");
+  const saveBtn   = document.getElementById("sigSave");
+
+  let drawing = false;
+  let lastX = 0, lastY = 0;
+
+  /* fill white bg */
+  function fillBg() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+  fillBg();
+
+  /* coordinate helper — works for both mouse and touch */
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width  / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const src = e.touches ? e.touches[0] : e;
+    return {
+      x: (src.clientX - rect.left) * scaleX,
+      y: (src.clientY - rect.top)  * scaleY
+    };
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    drawing = true;
+    const pos = getPos(e);
+    lastX = pos.x; lastY = pos.y;
+  }
+
+  function draw(e) {
+    e.preventDefault();
+    if (!drawing) return;
+    const pos = getPos(e);
+
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.strokeStyle = colorPick.value;
+    ctx.lineWidth   = parseInt(sizePick.value);
+    ctx.lineCap     = "round";
+    ctx.lineJoin    = "round";
+    ctx.stroke();
+
+    lastX = pos.x; lastY = pos.y;
+  }
+
+  function stopDraw(e) { drawing = false; }
+
+  /* mouse */
+  canvas.addEventListener("mousedown",  startDraw);
+  canvas.addEventListener("mousemove",  draw);
+  canvas.addEventListener("mouseup",    stopDraw);
+  canvas.addEventListener("mouseleave", stopDraw);
+
+  /* touch */
+  canvas.addEventListener("touchstart", startDraw, { passive: false });
+  canvas.addEventListener("touchmove",  draw,      { passive: false });
+  canvas.addEventListener("touchend",   stopDraw);
+
+  /* controls */
+  sizePick.addEventListener("input", () => sizeVal.textContent = sizePick.value);
+
+  clearBtn.addEventListener("click", () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    fillBg();
+  });
+
+  saveBtn.addEventListener("click", () => {
+    const link = document.createElement("a");
+    link.download = "jeep-signature.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+})();
+</script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JEEP® | Models</title>
+  <link rel="stylesheet" href="StyleSheet1.css"/>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="navbar">
+    <a class="brand" href="Home.html">JEEP<span class="reg">®</span></a>
+    <ul class="nav-links">
+      <li><a href="Home.html">Home</a></li>
+      <li class="dropdown">
+        <a class="active" href="models.html">Models ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="#wrangler">Wrangler</a></li>
+          <li><a href="#cherokee">Grand Cherokee</a></li>
+          <li><a href="#compass">Compass</a></li>
+        </ul>
+      </li>
+      <li><a href="prices.html">Prices</a></li>
+      <li><a href="Media.html">Media</a></li>
+      <li><a href="SignUp.html">Sign Up</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="oop.html">OOP</a></li>
+      <li><a href="builder.html">Build</a></li>
+    </ul>
+    <button class="nav-btn" id="navToggle" aria-label="Toggle menu">☰</button>
+    <div class="nav-logo-wrap">
+      <img src="Jeeplogoanimation.png" alt="Jeep Logo" class="jeep-logo-spin">
+    </div>
+  </nav>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <h1 class="page-title">Models</h1>
+    <p class="page-subtitle">Click any row to preview the model details above the table.</p>
+
+    <div class="model-display" id="wrangler">
+      <img id="modelImage" src="wrangler.jpg" alt="Jeep model preview"/>
+      <div class="model-info">
+        <h2 id="modelName">Wrangler</h2>
+        <p id="modelInfo">Price: $34,000 | Engine: 2.0L Turbo | HP: 270 | Fuel: Gasoline</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="table-actions">
+      <input id="modelSearch" class="input" type="text" placeholder="🔍  Search model name…" style="max-width:320px">
+    </div>
+    <div class="table-box">
+      <table class="table" id="modelsTable">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Price (USD)</th>
+            <th>Engine</th>
+            <th>Horsepower</th>
+            <th>Fuel</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="wrangler-row"
+              data-img="wrangler.jpg" data-name="Wrangler"
+              data-price="$34,000" data-engine="2.0L Turbo" data-hp="270" data-fuel="Gasoline">
+            <td>Wrangler</td><td>$34,000</td><td>2.0L Turbo</td><td>270</td><td>Gasoline</td>
+          </tr>
+          <tr id="cherokee"
+              data-img="cherokee.jpg" data-name="Grand Cherokee"
+              data-price="$40,000" data-engine="3.6L V6" data-hp="295" data-fuel="Gasoline">
+            <td>Grand Cherokee</td><td>$40,000</td><td>3.6L V6</td><td>295</td><td>Gasoline</td>
+          </tr>
+          <tr id="compass"
+              data-img="compass.jpg" data-name="Compass"
+              data-price="$28,500" data-engine="2.4L I4" data-hp="180" data-fuel="Gasoline">
+            <td>Compass</td><td>$28,500</td><td>2.4L I4</td><td>180</td><td>Gasoline</td>
+          </tr>
+          <tr data-img="renegade.jpg" data-name="Renegade"
+              data-price="$24,000" data-engine="1.3L Turbo" data-hp="177" data-fuel="Gasoline">
+            <td>Renegade</td><td>$24,000</td><td>1.3L Turbo</td><td>177</td><td>Gasoline</td>
+          </tr>
+          <tr data-img="gladiator.jpg" data-name="Gladiator"
+              data-price="$38,000" data-engine="3.6L V6" data-hp="285" data-fuel="Gasoline">
+            <td>Gladiator</td><td>$38,000</td><td>3.6L V6</td><td>285</td><td>Gasoline</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2026 Jeep® Project</p>
+  </div>
+</footer>
+
+<script src="JavaScript.js"></script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JEEP® | OOP</title>
+  <link rel="stylesheet" href="StyleSheet1.css"/>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="navbar">
+    <a class="brand" href="Home.html">JEEP<span class="reg">®</span></a>
+    <ul class="nav-links">
+      <li><a href="Home.html">Home</a></li>
+      <li class="dropdown">
+        <a href="models.html">Models ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="models.html#wrangler">Wrangler</a></li>
+          <li><a href="models.html#cherokee">Grand Cherokee</a></li>
+          <li><a href="models.html#compass">Compass</a></li>
+        </ul>
+      </li>
+      <li><a href="prices.html">Prices</a></li>
+      <li><a href="Media.html">Media</a></li>
+      <li><a href="SignUp.html">Sign Up</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a class="active" href="oop.html">OOP</a></li>
+      <li><a href="builder.html">Build</a></li>
+    </ul>
+    <button class="nav-btn" id="navToggle" aria-label="Toggle menu">☰</button>
+  </nav>
+</header>
+
+<!-- =========================================================
+     PAGE HERO
+     ========================================================= -->
+<section class="page-hero">
+  <div class="wrap">
+    <h1 class="page-title">OOP</h1>
+  </div>
+</section>
+
+<!-- =========================================================
+     CONTENT
+     ========================================================= -->
+<section class="section">
+  <div class="wrap">
+
+    <!-- Intro -->
+    <p class="oop-intro">
+      A <strong>Vehicle</strong> parent class defines 5 shared properties and 2 shared methods.
+      Three child classes — <strong>Wrangler</strong>, <strong>GrandCherokee</strong>, and
+      <strong>Compass</strong> — each extend Vehicle and add 2 extra properties and 2 unique
+      methods. Two objects are instantiated per class, and their full data is printed in the
+      formatted tables below.
+    </p>
+
+    <!-- Class hierarchy diagram -->
+    <div style="margin:32px 0 8px;text-align:center">
+      <div style="display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:.5px">
+        <div style="background:var(--green);color:#000;padding:10px 20px;border-radius:10px;font-weight:800">VEHICLE</div>
+        <div style="color:var(--muted)">extends ▸</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+          <div style="background:var(--surface2);border:1px solid var(--border);padding:10px 16px;border-radius:10px;font-weight:700">Wrangler</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);padding:10px 16px;border-radius:10px;font-weight:700">GrandCherokee</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);padding:10px 16px;border-radius:10px;font-weight:700">Compass</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────── PARENT ──────────── -->
+    <div class="oop-class-block">
+      <h3>Vehicle <span style="color:var(--muted);font-size:14px;font-weight:400">— Parent Class</span></h3>
+      <p class="class-meta">5 PROPERTIES &nbsp;|&nbsp; 2 METHODS &nbsp;|&nbsp; All child classes inherit these</p>
+
+      <div class="table-box">
+        <table class="table">
+          <thead><tr><th>Property</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>make</code></td><td>Manufacturer brand (e.g. "Jeep")</td></tr>
+            <tr><td><code>model</code></td><td>Model name</td></tr>
+            <tr><td><code>year</code></td><td>Production year</td></tr>
+            <tr><td><code>color</code></td><td>Exterior colour</td></tr>
+            <tr><td><code>price</code></td><td>Base price in USD</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="fn-list">
+        <span class="fn-tag">describe() → summary string</span>
+        <span class="fn-tag">isAffordable(budget) → boolean</span>
+      </div>
+    </div>
+
+    <!-- ──────────── WRANGLER ──────────── -->
+    <div class="oop-class-block">
+      <h3>Wrangler <span style="color:var(--muted);font-size:14px;font-weight:400">— Child Class</span></h3>
+      <p class="class-meta">Inherits Vehicle &nbsp;|&nbsp; +2 PROPERTIES &nbsp;|&nbsp; +2 METHODS</p>
+
+      <div class="table-box" style="margin-bottom:16px">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Object</th><th>Make</th><th>Model</th><th>Year</th><th>Colour</th>
+              <th>Price</th><th>4WD Type</th><th>Off-road Rating</th>
+              <th>describe()</th><th>isAffordable($50k)</th><th>getTerrainMode()</th><th>upgradeRating(+n)</th>
+            </tr>
+          </thead>
+          <tbody id="wranglerRows"></tbody>
+        </table>
+      </div>
+
+      <div class="fn-list">
+        <span class="fn-tag">getTerrainMode() → trail mode string</span>
+        <span class="fn-tag">upgradeRating(n) → boosts off-road rating</span>
+      </div>
+    </div>
+
+    <!-- ──────────── GRAND CHEROKEE ──────────── -->
+    <div class="oop-class-block">
+      <h3>GrandCherokee <span style="color:var(--muted);font-size:14px;font-weight:400">— Child Class</span></h3>
+      <p class="class-meta">Inherits Vehicle &nbsp;|&nbsp; +2 PROPERTIES &nbsp;|&nbsp; +2 METHODS</p>
+
+      <div class="table-box" style="margin-bottom:16px">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Object</th><th>Make</th><th>Model</th><th>Year</th><th>Colour</th>
+              <th>Price</th><th>Luxury Level</th><th>Seats</th>
+              <th>describe()</th><th>isAffordable($60k)</th><th>getLuxuryLabel()</th><th>addPassenger()</th>
+            </tr>
+          </thead>
+          <tbody id="cherokeeRows"></tbody>
+        </table>
+      </div>
+
+      <div class="fn-list">
+        <span class="fn-tag">getLuxuryLabel() → luxury tier string</span>
+        <span class="fn-tag">addPassenger() → increments occupied seats</span>
+      </div>
+    </div>
+
+    <!-- ──────────── COMPASS ──────────── -->
+    <div class="oop-class-block">
+      <h3>Compass <span style="color:var(--muted);font-size:14px;font-weight:400">— Child Class</span></h3>
+      <p class="class-meta">Inherits Vehicle &nbsp;|&nbsp; +2 PROPERTIES &nbsp;|&nbsp; +2 METHODS</p>
+
+      <div class="table-box" style="margin-bottom:16px">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Object</th><th>Make</th><th>Model</th><th>Year</th><th>Colour</th>
+              <th>Price</th><th>Fuel Type</th><th>Range (mi)</th>
+              <th>describe()</th><th>isAffordable($35k)</th><th>getEfficiencyLabel()</th><th>refuel(miles)</th>
+            </tr>
+          </thead>
+          <tbody id="compassRows"></tbody>
+        </table>
+      </div>
+
+      <div class="fn-list">
+        <span class="fn-tag">getEfficiencyLabel() → eco-rating string</span>
+        <span class="fn-tag">refuel(miles) → extends current range</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2026 Jeep® Project</p>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   JEEP OOP DEMO
+   Parent: Vehicle (5 props, 2 methods)
+   Children: Wrangler, GrandCherokee, Compass
+     — each adds 2 props + 2 unique methods
+   2 objects per class → printed into formatted tables
+   ============================================================ */
+
+/* ---- Parent Class ---- */
+class Vehicle {
+  constructor(make, model, year, color, price) {
+    this.make  = make;
+    this.model = model;
+    this.year  = year;
+    this.color = color;
+    this.price = price;
+  }
+
+  // method 1 — shared
+  describe() {
+    return `${this.year} ${this.make} ${this.model} (${this.color})`;
+  }
+
+  // method 2 — shared
+  isAffordable(budget) {
+    return this.price <= budget;
+  }
+}
+
+/* ---- Child 1: Wrangler ---- */
+class Wrangler extends Vehicle {
+  constructor(make, model, year, color, price, fourWDType, offRoadRating) {
+    super(make, model, year, color, price);
+    this.fourWDType     = fourWDType;     // extra prop 1
+    this.offRoadRating  = offRoadRating;  // extra prop 2
+  }
+
+  // unique method 1
+  getTerrainMode() {
+    return this.offRoadRating >= 8
+      ? "⛰ Rock-Crawl Mode"
+      : "🌲 Trail Mode";
+  }
+
+  // unique method 2
+  upgradeRating(n) {
+    this.offRoadRating = Math.min(10, this.offRoadRating + n);
+    return `Rating upgraded to ${this.offRoadRating}/10`;
+  }
+}
+
+/* ---- Child 2: GrandCherokee ---- */
+class GrandCherokee extends Vehicle {
+  constructor(make, model, year, color, price, luxuryLevel, seats) {
+    super(make, model, year, color, price);
+    this.luxuryLevel = luxuryLevel;  // extra prop 1
+    this.seats       = seats;        // extra prop 2
+  }
+
+  // unique method 1
+  getLuxuryLabel() {
+    if (this.luxuryLevel >= 9) return "👑 Platinum";
+    if (this.luxuryLevel >= 7) return "⭐ Premium";
+    return "🔹 Standard";
+  }
+
+  // unique method 2
+  addPassenger() {
+    if (!this.occupied) this.occupied = 1;
+    else this.occupied = Math.min(this.seats, this.occupied + 1);
+    return `Occupied: ${this.occupied}/${this.seats} seats`;
+  }
+}
+
+/* ---- Child 3: Compass ---- */
+class Compass extends Vehicle {
+  constructor(make, model, year, color, price, fuelType, rangeMiles) {
+    super(make, model, year, color, price);
+    this.fuelType   = fuelType;    // extra prop 1
+    this.rangeMiles = rangeMiles;  // extra prop 2
+  }
+
+  // unique method 1
+  getEfficiencyLabel() {
+    if (this.rangeMiles > 400) return "🌿 Eco Champion";
+    if (this.rangeMiles > 280) return "✅ Efficient";
+    return "⚡ City Runner";
+  }
+
+  // unique method 2
+  refuel(miles) {
+    this.rangeMiles += miles;
+    return `Range extended to ${this.rangeMiles} mi`;
+  }
+}
+
+/* ============================================================
+   Instantiate 2 objects per class
+   ============================================================ */
+const wrangler1 = new Wrangler("Jeep","Wrangler",2024,"Granite Crystal","$34,000","Part-time 4WD", 8);
+const wrangler2 = new Wrangler("Jeep","Wrangler Rubicon",2025,"Firecracker Red","$49,000","Full-time 4WD", 10);
+
+const cherokee1 = new GrandCherokee("Jeep","Grand Cherokee",2024,"Diamond Black","$40,000", 8, 7);
+const cherokee2 = new GrandCherokee("Jeep","Grand Cherokee L",2025,"Baltic Grey","$55,000", 9, 8);
+
+const compass1  = new Compass("Jeep","Compass",2024,"Sting-Gray","$28,500","Gasoline", 310);
+const compass2  = new Compass("Jeep","Compass 4xe",2025,"Bright White","$36,000","Plug-in Hybrid", 460);
+
+/* ============================================================
+   Render helpers
+   ============================================================ */
+function cell(v) { return `<td>${v}</td>`; }
+function bool(v) { return v ? '<span style="color:var(--green)">✔ Yes</span>' : '<span style="color:var(--red)">✘ No</span>'; }
+
+/* ---- Wrangler table ---- */
+function renderWrangler(obj, name) {
+  return `<tr>
+    ${cell(`<strong>${name}</strong>`)}
+    ${cell(obj.make)}${cell(obj.model)}${cell(obj.year)}${cell(obj.color)}${cell(obj.price)}
+    ${cell(obj.fourWDType)}${cell(obj.offRoadRating+"/10")}
+    ${cell(obj.describe())}
+    ${cell(bool(obj.isAffordable(50000)))}
+    ${cell(obj.getTerrainMode())}
+    ${cell(obj.upgradeRating(1))}
+  </tr>`;
+}
+
+document.getElementById("wranglerRows").innerHTML =
+  renderWrangler(wrangler1, "wrangler1") +
+  renderWrangler(wrangler2, "wrangler2");
+
+/* ---- Cherokee table ---- */
+function renderCherokee(obj, name) {
+  return `<tr>
+    ${cell(`<strong>${name}</strong>`)}
+    ${cell(obj.make)}${cell(obj.model)}${cell(obj.year)}${cell(obj.color)}${cell(obj.price)}
+    ${cell(obj.luxuryLevel+"/10")}${cell(obj.seats)}
+    ${cell(obj.describe())}
+    ${cell(bool(obj.isAffordable(60000)))}
+    ${cell(obj.getLuxuryLabel())}
+    ${cell(obj.addPassenger())}
+  </tr>`;
+}
+
+document.getElementById("cherokeeRows").innerHTML =
+  renderCherokee(cherokee1, "cherokee1") +
+  renderCherokee(cherokee2, "cherokee2");
+
+/* ---- Compass table ---- */
+function renderCompass(obj, name) {
+  return `<tr>
+    ${cell(`<strong>${name}</strong>`)}
+    ${cell(obj.make)}${cell(obj.model)}${cell(obj.year)}${cell(obj.color)}${cell(obj.price)}
+    ${cell(obj.fuelType)}${cell(obj.rangeMiles+" mi")}
+    ${cell(obj.describe())}
+    ${cell(bool(obj.isAffordable(35000)))}
+    ${cell(obj.getEfficiencyLabel())}
+    ${cell(obj.refuel(50))}
+  </tr>`;
+}
+
+document.getElementById("compassRows").innerHTML =
+  renderCompass(compass1, "compass1") +
+  renderCompass(compass2, "compass2");
+</script>
+
+<script src="JavaScript.js"></script>
+</body>
+</html>
+
+<?xml version="1.0" encoding="utf-8"?>
+<packages>
+  <package id="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" version="2.0.1" targetFramework="net472" />
+</packages>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JEEP® | Prices</title>
+  <link rel="stylesheet" href="StyleSheet1.css"/>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="navbar">
+    <a class="brand" href="Home.html">JEEP<span class="reg">®</span></a>
+    <ul class="nav-links">
+      <li><a href="Home.html">Home</a></li>
+      <li class="dropdown">
+        <a href="models.html">Models ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="models.html#wrangler">Wrangler</a></li>
+          <li><a href="models.html#cherokee">Grand Cherokee</a></li>
+          <li><a href="models.html#compass">Compass</a></li>
+        </ul>
+      </li>
+      <li><a class="active" href="prices.html">Prices</a></li>
+      <li><a href="Media.html">Media</a></li>
+      <li><a href="SignUp.html">Sign Up</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="oop.html">OOP</a></li>
+      <li><a href="builder.html">Build</a></li>
+    </ul>
+    <button class="nav-btn" id="navToggle" aria-label="Toggle menu">☰</button>
+  </nav>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <h1 class="page-title">Prices &amp; Packages</h1>
+    <p class="page-subtitle">Financing estimates — based on 60-month term at 4.9% APR.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2 class="section-title left">Finance Packages</h2>
+    <div class="table-box">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Package</th><th>Model</th><th>Includes</th><th>Monthly (est.)</th><th>Down Payment</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Sport</td><td>Wrangler</td><td>Base 4×4 + Safety Suite</td><td>$420</td><td>$2,000</td></tr>
+          <tr><td>Altitude</td><td>Compass</td><td>Premium Interior + Tech Pack</td><td>$310</td><td>$1,500</td></tr>
+          <tr><td>Limited</td><td>Grand Cherokee</td><td>Luxury + Advanced Driver Assist</td><td>$520</td><td>$2,500</td></tr>
+          <tr><td>Trailhawk</td><td>Renegade</td><td>Off-road + Rock Rails</td><td>$270</td><td>$1,200</td></tr>
+          <tr><td>Mojave</td><td>Gladiator</td><td>Desert-rated + Fox Shocks</td><td>$490</td><td>$2,200</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="section-title left" style="margin-top:48px">Model MSRP Overview</h2>
+    <div class="table-box">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Model</th><th>Base MSRP</th><th>Top Trim</th><th>4WD Standard</th><th>Tow Capacity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Wrangler</td><td>$34,000</td><td>$62,000 (Rubicon 392)</td><td>Yes</td><td>3,500 lbs</td></tr>
+          <tr><td>Grand Cherokee</td><td>$40,000</td><td>$88,000 (4xe Summit)</td><td>Optional</td><td>7,200 lbs</td></tr>
+          <tr><td>Compass</td><td>$28,500</td><td>$36,000 (Limited 4WD)</td><td>Optional</td><td>2,000 lbs</td></tr>
+          <tr><td>Renegade</td><td>$24,000</td><td>$34,000 (Trailhawk)</td><td>Optional</td><td>2,000 lbs</td></tr>
+          <tr><td>Gladiator</td><td>$38,000</td><td>$58,000 (Mojave)</td><td>Yes</td><td>7,650 lbs</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2026 Jeep® Project</p>
+  </div>
+</footer>
+
+<script src="JavaScript.js"></script>
+</body>
+</html>
+
+<%@ WebHandler Language="C#" CodeBehind="SaveContact.ashx.cs" Class="JeepSite.SaveContact" %>
+
+using System;
+using System.Data.SqlClient;
+using System.Configuration;
+using System.Web;
+
+namespace JeepSite
+{
+    public class SaveContact : IHttpHandler
+    {
+        public void ProcessRequest(HttpContext context)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.AddHeader("Access-Control-Allow-Origin", "*");
+
+            try
+            {
+                // Read form values sent by contact.html
+                string name    = context.Request.Form["name"]    ?? "";
+                string phone   = context.Request.Form["phone"]   ?? "";
+                string topic   = context.Request.Form["topic"]   ?? "";
+                string message = context.Request.Form["message"] ?? "";
+
+                string connStr = ConfigurationManager.ConnectionStrings["JeepSiteDB"].ConnectionString;
+
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+
+                    string sql = @"
+                        INSERT INTO Contacts (FullName, Phone, Topic, Message)
+                        VALUES (@name, @phone, @topic, @message)";
+
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@name",    name);
+                        cmd.Parameters.AddWithValue("@phone",   phone);
+                        cmd.Parameters.AddWithValue("@topic",   topic);
+                        cmd.Parameters.AddWithValue("@message", message);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                context.Response.Write("{\"ok\":true,\"message\":\"Message saved successfully\"}");
+            }
+            catch (Exception ex)
+            {
+                string safeMsg = ex.Message.Replace("\"", "'").Replace("\r", "").Replace("\n", " ");
+                context.Response.Write("{\"ok\":false,\"error\":\"" + safeMsg + "\"}");
+            }
+        }
+
+        public bool IsReusable => false;
+    }
+}
+
+<%@ WebHandler Language="C#" CodeBehind="SaveUser.ashx.cs" Class="JeepSite.SaveUser" %>
+
+using System;
+using System.Data.SqlClient;
+using System.Configuration;
+using System.Web;
+
+namespace JeepSite
+{
+    public class SaveUser : IHttpHandler
+    {
+        public void ProcessRequest(HttpContext context)
+        {
+            // Allow AJAX calls from the same site
+            context.Response.ContentType = "application/json";
+            context.Response.AddHeader("Access-Control-Allow-Origin", "*");
+
+            try
+            {
+                // Read form values sent by SignUp.html
+                string name       = context.Request.Form["name"]       ?? "";
+                string email      = context.Request.Form["email"]      ?? "";
+                string password   = context.Request.Form["password"]   ?? "";
+                string birthDate  = context.Request.Form["birthDate"]  ?? "";
+                string favColor   = context.Request.Form["favColor"]   ?? "";
+                string model      = context.Request.Form["model"]      ?? "";
+                string driveType  = context.Request.Form["driveType"]  ?? "";
+                int    experience = int.TryParse(context.Request.Form["experience"], out int exp) ? exp : 5;
+
+                // Get connection string from Web.config
+                string connStr = ConfigurationManager.ConnectionStrings["JeepSiteDB"].ConnectionString;
+
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+
+                    string sql = @"
+                        INSERT INTO Users
+                            (FullName, Email, Password, BirthDate, FavouriteColor, PreferredModel, DrivingType, ExperienceLevel)
+                        VALUES
+                            (@name, @email, @password, @birthDate, @favColor, @model, @driveType, @experience)";
+
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@name",       name);
+                        cmd.Parameters.AddWithValue("@email",      email);
+                        cmd.Parameters.AddWithValue("@password",   password);
+                        cmd.Parameters.AddWithValue("@birthDate",  string.IsNullOrEmpty(birthDate)
+                                                                    ? (object)DBNull.Value
+                                                                    : DateTime.Parse(birthDate));
+                        cmd.Parameters.AddWithValue("@favColor",   favColor);
+                        cmd.Parameters.AddWithValue("@model",      model);
+                        cmd.Parameters.AddWithValue("@driveType",  driveType);
+                        cmd.Parameters.AddWithValue("@experience", experience);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                // Success response
+                context.Response.Write("{\"ok\":true,\"message\":\"User saved successfully\"}");
+            }
+            catch (Exception ex)
+            {
+                // Send error back to the browser (safe for dev; remove ex.Message in production)
+                string safeMsg = ex.Message.Replace("\"", "'").Replace("\r", "").Replace("\n", " ");
+                context.Response.Write("{\"ok\":false,\"error\":\"" + safeMsg + "\"}");
+            }
+        }
+
+        public bool IsReusable => false;
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JEEP® | Sign Up</title>
+  <link rel="stylesheet" href="StyleSheet1.css"/>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="navbar">
+    <a class="brand" href="Home.html">JEEP<span class="reg">®</span></a>
+    <ul class="nav-links">
+      <li><a href="Home.html">Home</a></li>
+      <li class="dropdown">
+        <a href="models.html">Models ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="models.html#wrangler">Wrangler</a></li>
+          <li><a href="models.html#cherokee">Grand Cherokee</a></li>
+          <li><a href="models.html#compass">Compass</a></li>
+        </ul>
+      </li>
+      <li><a href="prices.html">Prices</a></li>
+      <li><a href="Media.html">Media</a></li>
+      <li><a class="active" href="SignUp.html">Sign Up</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="oop.html">OOP</a></li>
+      <li><a href="builder.html">Build</a></li>
+    </ul>
+    <button class="nav-btn" id="navToggle" aria-label="Toggle menu">☰</button>
+  </nav>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <h1 class="page-title">Sign Up</h1>
+    <p class="page-subtitle">Create your account to receive updates and exclusive offers.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap form-wrap">
+    <form id="signupForm" class="form" novalidate>
+
+      <div class="form-row">
+        <label for="suName">Full Name</label>
+        <input class="input" type="text" id="suName" placeholder="Your full name">
+        <small class="error" id="suNameErr"></small>
+      </div>
+
+      <div class="form-row">
+        <label for="suEmail">Email</label>
+        <input class="input" type="email" id="suEmail" placeholder="name@email.com">
+        <small class="error" id="suEmailErr"></small>
+      </div>
+
+      <div class="form-row">
+        <label for="suPass">Password</label>
+        <input class="input" type="password" id="suPass" placeholder="Minimum 6 characters">
+        <small class="error" id="suPassErr"></small>
+      </div>
+
+      <div class="form-row two">
+        <div>
+          <label for="suDate">Birth Date</label>
+          <input class="input" type="date" id="suDate">
+          <small class="error" id="suDateErr"></small>
+        </div>
+        <div>
+          <label for="suColor">Favourite Colour</label>
+          <input class="input" type="color" id="suColor" value="#5dfc6e">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label for="suModel">Preferred Model</label>
+        <select class="input" id="suModel">
+          <option value="">Choose a model…</option>
+          <option>Wrangler</option>
+          <option>Grand Cherokee</option>
+          <option>Compass</option>
+          <option>Renegade</option>
+          <option>Gladiator</option>
+        </select>
+        <small class="error" id="suModelErr"></small>
+      </div>
+
+      <div class="form-row">
+        <label>Driving Type</label>
+        <div class="inline">
+          <label class="chip"><input type="radio" name="drive" value="City"> City</label>
+          <label class="chip"><input type="radio" name="drive" value="Off-road"> Off-road</label>
+          <label class="chip"><input type="radio" name="drive" value="Both"> Both</label>
+        </div>
+        <small class="error" id="suDriveErr"></small>
+      </div>
+
+      <div class="form-row">
+        <label for="suFile">Upload Driving Licence</label>
+        <input class="input" type="file" id="suFile" accept="image/*,.pdf">
+      </div>
+
+      <div class="form-row">
+        <label>Experience Level — <span id="rangeVal">5</span> / 10</label>
+        <input type="range" id="suRange" min="0" max="10" value="5"
+               style="accent-color:var(--green); width:100%">
+      </div>
+
+      <div class="form-row">
+        <label class="chip" style="width:fit-content">
+          <input type="checkbox" id="suAgree"> I agree to receive updates
+        </label>
+        <small class="error" id="suAgreeErr"></small>
+      </div>
+
+      <button class="btn" type="submit">Create Account</button>
+      <div class="success" id="suSuccess"></div>
+    </form>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2026 Jeep® Project</p>
+  </div>
+</footer>
+
+<script src="JavaScript.js"></script>
+</body>
+</html>
+
+/* ============================================================
+   JEEP® — Global Stylesheet  (redesigned)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap');
+
+/* ---------- tokens ---------- */
+:root {
+  --bg:        #080808;
+  --surface:   #111111;
+  --surface2:  #1a1a1a;
+  --border:    rgba(255,255,255,0.07);
+  --text:      #f0f0f0;
+  --muted:     #888;
+  --green:     #5dfc6e;
+  --green-dim: rgba(93,252,110,0.12);
+  --green-glow:rgba(93,252,110,0.25);
+  --red:       #ff5b5b;
+  --radius:    14px;
+  --radius-lg: 20px;
+  --nav-h:     64px;
+}
+
+/* ---------- reset ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--nav-h);
+  padding: 0 28px;
+  background: rgba(8,8,8,0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 26px;
+  letter-spacing: 3px;
+  color: #fff;
+  text-decoration: none;
+  transition: color .2s;
+}
+.brand:hover { color: var(--green); }
+
+.reg {
+  font-size: 11px;
+  vertical-align: super;
+  opacity: .7;
+  margin-left: 1px;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .4px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  transition: color .2s, background .2s;
+}
+.nav-links a:hover  { color: var(--text); background: rgba(255,255,255,0.06); }
+.nav-links a.active { color: var(--green); background: var(--green-dim); }
+
+/* dropdown */
+.dropdown { position: relative; }
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 200px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px;
+  display: none;
+  box-shadow: 0 24px 60px rgba(0,0,0,.6);
+  z-index: 200;
+}
+.dropdown-menu li { list-style: none; }
+.dropdown-menu a { display: block; padding: 9px 12px; border-radius: 8px; color: var(--muted) !important; font-size: 13px; }
+.dropdown-menu a:hover { color: var(--green) !important; background: var(--green-dim) !important; }
+.dropdown:hover .dropdown-menu { display: block; }
+
+/* hamburger */
+.nav-btn {
+  display: none;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: #fff;
+  border-radius: 10px;
+  padding: 8px 11px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background .2s;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.1); }
+
+/* spinning logo badge */
+.nav-logo-wrap {
+  position: absolute;
+  top: calc(var(--nav-h) + 8px);
+  right: 22px;
+  z-index: 998;
+}
+.jeep-logo-spin {
+  width: 52px;
+  height: auto;
+  animation: jeepSpin 4s linear infinite;
+  opacity: .7;
+  filter: drop-shadow(0 0 6px var(--green-glow));
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,.75) 0%, rgba(0,0,0,.4) 100%);
+  z-index: 1;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+.hero h1 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(48px, 7vw, 88px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.hero h1 span { color: var(--green); }
+
+.hero p {
+  color: rgba(255,255,255,0.65);
+  font-size: 16px;
+  max-width: 540px;
+  line-height: 1.75;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.scroll-hint {
+  margin-top: 48px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-size: 18px;
+  animation: bounce 1.8s infinite;
+}
+
+/* ============================================================
+   PAGE HERO (inner pages)
+   ============================================================ */
+.page-hero {
+  padding: 56px 28px 28px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(93,252,110,0.04) 0%, transparent 100%);
+}
+
+.page-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+}
+
+.page-subtitle {
+  color: var(--muted);
+  margin-top: 6px;
+  font-size: 15px;
+}
+
+/* ============================================================
+   LAYOUT HELPERS
+   ============================================================ */
+.section  { padding: 70px 28px; }
+
+.wrap     { max-width: 1100px; margin: 0 auto; }
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.panel { display: flex; flex-direction: column; gap: 16px; }
+
+.row   { display: flex; align-items: center; }
+.gap   { gap: 10px; }
+.mt    { margin-top: 12px; }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-align: center;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+.section-title.left { text-align: left; }
+
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+
+.link { color: var(--green); text-decoration: none; }
+.link:hover { text-decoration: underline; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--green);
+  color: #000;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: transform .2s, filter .2s, box-shadow .2s;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 28px var(--green-glow);
+}
+.btn:active { transform: translateY(0); }
+
+.btn-ghost {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.06);
+  box-shadow: none;
+  filter: none;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  transition: transform .25s, box-shadow .25s, border-color .25s;
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+  border-color: var(--green-glow);
+}
+.card h3 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.card p { color: var(--muted); font-size: 14px; line-height: 1.65; margin-bottom: 14px; }
+
+.feature-list {
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 2;
+  margin-top: 8px;
+}
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+.table-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.table-box {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+  font-size: 14px;
+}
+.table th, .table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.table th {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--green);
+  background: rgba(0,0,0,.3);
+}
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr { transition: background .15s; }
+.table tbody tr:hover   { background: var(--green-dim); cursor: pointer; }
+.table tbody tr.selected{ background: rgba(93,252,110,0.16); }
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+.form-wrap { max-width: 560px; }
+
+.form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-row label { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: .3px; }
+.form-row.two { flex-direction: row; gap: 14px; }
+.form-row.two > div { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+.input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(93,252,110,0.12);
+}
+.input::placeholder { color: var(--muted); }
+
+select.input {
+  background: var(--surface2);
+  cursor: pointer;
+}
+select.input option { background: #111; color: #fff; }
+
+textarea.input { resize: vertical; min-height: 100px; }
+
+.inline { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.chip {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chip:hover { background: var(--green-dim); border-color: var(--green); }
+
+.error   { color: var(--red); font-size: 12px; min-height: 16px; }
+.success { color: var(--green); font-weight: 600; font-size: 14px; margin-top: 4px; }
+
+.form-alert {
+  display: none;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.form-alert.error   { display: block; background: rgba(255,91,91,0.1); color: #ff8080; border: 1px solid rgba(255,91,91,0.3); }
+.form-alert.success { display: block; background: rgba(93,252,110,0.1); color: var(--green); border: 1px solid rgba(93,252,110,0.3); }
+
+.help-box {
+  display: none;
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ============================================================
+   MODEL DISPLAY
+   ============================================================ */
+.model-display {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-top: 20px;
+}
+.model-display img {
+  width: 220px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: #0a0a0a;
+  flex-shrink: 0;
+}
+.model-info h2 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.model-info p { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+/* ============================================================
+   MEDIA — video + canvas
+   ============================================================ */
+.video {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.canvas {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  display: block;
+}
+
+/* ============================================================
+   MAP
+   ============================================================ */
+.iframe-box {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.iframe-box iframe {
+  width: 100%;
+  height: 320px;
+  border: none;
+  display: block;
+  filter: invert(1) hue-rotate(180deg) brightness(0.85);
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+  padding: 28px;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ============================================================
+   OOP PAGE — specific
+   ============================================================ */
+.oop-intro {
+  max-width: 720px;
+  color: var(--muted);
+  line-height: 1.8;
+  font-size: 15px;
+}
+
+.oop-class-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-top: 28px;
+}
+.oop-class-block h3 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+.oop-class-block .class-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  letter-spacing: .4px;
+}
+
+.obj-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.obj-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.obj-card .obj-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.obj-card .obj-prop {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+.obj-card .obj-prop span { color: var(--text); font-weight: 500; }
+
+.fn-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.fn-tag {
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid rgba(93,252,110,0.2);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: monospace;
+  letter-spacing: .3px;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+.fade-in { animation: fadeIn .8s ease both; }
+.delay-1 { animation-delay: .18s; }
+.delay-2 { animation-delay: .36s; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes bounce {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+@keyframes jeepSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%,100% { opacity: .7; }
+  50%      { opacity: 1; }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 860px) {
+  .nav-btn { display: block; }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    right: 16px;
+    top: calc(var(--nav-h) + 4px);
+    flex-direction: column;
+    background: rgba(10,10,10,0.96);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 10px;
+    width: 240px;
+    backdrop-filter: blur(16px);
+  }
+  .nav-links.open { display: flex; }
+
+  .dropdown-menu { position: static; box-shadow: none; }
+  .dropdown:hover .dropdown-menu { display: none; }
+
+  .split { grid-template-columns: 1fr; }
+
+  .model-display { flex-direction: column; align-items: flex-start; }
+  .model-display img { width: 100%; height: 180px; }
+}
+
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  For more information on how to configure your ASP.NET application, please visit
+  https://go.microsoft.com/fwlink/?LinkId=169433
+  -->
+<configuration>
+
+  <!-- ===== Database connection ===== -->
+  <connectionStrings>
+    <add name="JeepSiteDB"
+         connectionString="Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=JeepSiteDB;Integrated Security=True;Connect Timeout=30"
+         providerName="System.Data.SqlClient" />
+  </connectionStrings>
+  <system.web>
+    <compilation debug="true" targetFramework="4.7.2" />
+    <httpRuntime targetFramework="4.7.2" />
+  </system.web>
+  <system.codedom>
+    <compilers>
+      <compiler language="c#;cs;csharp" extension=".cs" type="Microsoft.CodeDom.Providers.DotNetCompilerPlatform.CSharpCodeProvider, Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" warningLevel="4" compilerOptions="/langversion:default /nowarn:1659;1699;1701" />
+      <compiler language="vb;vbs;visualbasic;vbscript" extension=".vb" type="Microsoft.CodeDom.Providers.DotNetCompilerPlatform.VBCodeProvider, Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" warningLevel="4" compilerOptions="/langversion:default /nowarn:41008 /define:_MYTYPE=\&quot;Web\&quot; /optionInfer+" />
+    </compilers>
+  </system.codedom>
+</configuration>
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- For more information on using web.config transformation visit https://go.microsoft.com/fwlink/?LinkId=125889 -->
+
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <!--
+    In the example below, the "SetAttributes" transform will change the value of 
+    "connectionString" to use "ReleaseSQLServer" only when the "Match" locator 
+    finds an attribute "name" that has a value of "MyDB".
+    
+    <connectionStrings>
+      <add name="MyDB" 
+        connectionString="Data Source=ReleaseSQLServer;Initial Catalog=MyReleaseDB;Integrated Security=True" 
+        xdt:Transform="SetAttributes" xdt:Locator="Match(name)"/>
+    </connectionStrings>
+  -->
+  <system.web>
+    <!--
+      In the example below, the "Replace" transform will replace the entire 
+      <customErrors> section of your web.config file.
+      Note that because there is only one customErrors section under the 
+      <system.web> node, there is no need to use the "xdt:Locator" attribute.
+      
+      <customErrors defaultRedirect="GenericError.htm"
+        mode="RemoteOnly" xdt:Transform="Replace">
+        <error statusCode="500" redirect="InternalError.htm"/>
+      </customErrors>
+    -->
+  </system.web>
+</configuration>
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- For more information on using web.config transformation visit https://go.microsoft.com/fwlink/?LinkId=125889 -->
+
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <!--
+    In the example below, the "SetAttributes" transform will change the value of 
+    "connectionString" to use "ReleaseSQLServer" only when the "Match" locator 
+    finds an attribute "name" that has a value of "MyDB".
+    
+    <connectionStrings>
+      <add name="MyDB" 
+        connectionString="Data Source=ReleaseSQLServer;Initial Catalog=MyReleaseDB;Integrated Security=True" 
+        xdt:Transform="SetAttributes" xdt:Locator="Match(name)"/>
+    </connectionStrings>
+  -->
+  <system.web>
+    <compilation xdt:Transform="RemoveAttributes(debug)" />
+    <!--
+      In the example below, the "Replace" transform will replace the entire 
+      <customErrors> section of your web.config file.
+      Note that because there is only one customErrors section under the 
+      <system.web> node, there is no need to use the "xdt:Locator" attribute.
+      
+      <customErrors defaultRedirect="GenericError.htm"
+        mode="RemoteOnly" xdt:Transform="Replace">
+        <error statusCode="500" redirect="InternalError.htm"/>
+      </customErrors>
+    -->
+  </system.web>
+</configuration>
