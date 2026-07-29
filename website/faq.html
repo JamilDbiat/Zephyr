@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>FAQ - Delay Services</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .page-content {
+      max-width: 800px;
+      margin: 140px auto 80px;
+      padding: 0 30px;
+    }
+    .page-content h1 {
+      font-size: 40px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    .page-content .subtitle {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 20px;
+    }
+    .faq-item {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .faq-item:hover {
+      border-color: rgba(255,255,255,0.2);
+    }
+    .faq-question {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 18px 20px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    .faq-question:hover {
+      background: rgba(255,255,255,0.07);
+    }
+    .faq-question i {
+      color: #666;
+      font-size: 12px;
+      transition: transform 0.3s;
+    }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, padding 0.3s;
+      padding: 0 20px;
+    }
+    .faq-answer p {
+      color: #888;
+      font-size: 14px;
+      line-height: 1.8;
+      padding: 16px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .faq-item.open .faq-answer {
+      max-height: 300px;
+    }
+    .faq-item.open .faq-question i {
+      transform: rotate(180deg);
+    }
+    .faq-item.open .faq-question {
+      background: rgba(255,255,255,0.06);
+    }
+    .faq-category {
+      font-size: 12px;
+      font-weight: 700;
+      color: #555;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin: 30px 0 12px;
+    }
+  </style>
+</head>
+<body>
+<div class="asteroids">
+  <span style="left:10%; animation-duration:25s;"></span>
+  <span style="left:25%; animation-duration:30s;"></span>
+  <span style="left:40%; animation-duration:35s;"></span>
+  <span style="left:60%; animation-duration:28s;"></span>
+  <span style="left:75%; animation-duration:32s;"></span>
+  <span style="left:90%; animation-duration:40s;"></span>
+</div>
+
+<nav class="navbar">
+  <a href="index.html" class="logo">Delay Services</a>
+  <a href="index.html" class="back-btn">← Back</a>
+</nav>
+
+<div class="page-content">
+  <h1>FAQ</h1>
+  <p class="subtitle">Frequently asked questions about Delay Services.</p>
+
+  <p class="faq-category">General</p>
+
+  <div class="faq-item">
+    <button class="faq-question" onclick="toggle(this)">
+      What is Delay Services?
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+      <p>Delay Services is a trusted Roblox marketplace where you can buy rare items, limited sets, and exclusive drops safely. All transactions are handled through our Discord server.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" onclick="toggle(this)">
+      Is Delay Services safe to use?
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+      <p>Yes. We take trust and safety seriously. All our staff are verified and every transaction is monitored. We have a strict anti-scam policy and any violation results in an immediate permanent ban.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" onclick="toggle(this)">
+      Do I need an account to buy?
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+      <p>Yes, you need to create an account on Delay Services and also be a member of our Discord server to complete purchases. Registration is free and takes less than a minute.</p>
+    </div>
+  </div>
+
+  <p class="faq-category">Orders & Payments</p>
+
+  <div class="faq-item">
+    <button class="faq-question" onclick="toggle(this)">
+      How do I place an order?
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+      <p>Browse the marketplace, add items to your cart, then click Checkout. This will redirect you to our Discord server where a staff member will assist you with completing the transaction.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" onclick="toggle(this)">
+      What payment methods do you accept?
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+      <p>We accept various payment methods including Robux, PayPal, and other options discussed directly through our Discord. Contact our staff to confirm available payment options before purchasing.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" onclick="toggle(this)">
+      How long does delivery take?
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+      <p>Most orders are fulfilled within a few hours. Delivery time depends on staff availability. If your order hasn't been delivered within 24 hours, please open a support ticket in our Discord.</p>
+    </div>
+  </div>
+
+  <p class="faq-category">Refunds & Issues</p>
+
+  <div class="faq-item">
+    <button class="faq-question" onclick="toggle(this)">
+      Can I get a refund?
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+      <p>Refunds are handled on a case-by-case basis. If you did not receive your item or there was an issue with your order, contact us within 24 hours via Discord. See our full Refund Policy for details.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question" onclick="toggle(this)">
+      What do I do if I have a problem with my order?
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+    <div class="faq-answer">
+      <p>Open a support ticket in our <a href="https://discord.gg/delayservices" target="_blank" style="color:white;">Discord server</a> and provide your order details. Our team will investigate and resolve the issue as quickly as possible.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggle(btn) {
+  const item = btn.parentElement;
+  const isOpen = item.classList.contains("open");
+  document.querySelectorAll(".faq-item").forEach(i => i.classList.remove("open"));
+  if (!isOpen) item.classList.add("open");
+}
+</script>
+<script src="script.js"></script>
+</body>
+</html>

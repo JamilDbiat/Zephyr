@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JEEP® | Build Your Jeep</title>
+  <link rel="stylesheet" href="StyleSheet1.css"/>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    /* ── Model cards ── */
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .model-card {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+    }
+    .model-card:hover {
+      border-color: rgba(93,252,110,0.4);
+      transform: translateY(-3px);
+    }
+    .model-card.selected {
+      border-color: var(--green);
+      box-shadow: 0 0 18px var(--green-glow);
+      background: var(--green-dim);
+    }
+    .model-card .model-emoji { font-size: 2rem; display: block; margin-bottom: 8px; }
+    .model-card .model-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .model-card .model-price {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── Color swatches ── */
+    .color-grid {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .swatch {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: transform .2s, border-color .2s;
+      position: relative;
+    }
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.selected {
+      border-color: var(--green);
+      transform: scale(1.2);
+    }
+    .swatch[title="White"] { border-color: #444; }
+    .swatch[title="White"].selected { border-color: var(--green); }
+
+    /* ── Engine options ── */
+    .engine-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .engine-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .engine-option:hover { border-color: rgba(93,252,110,0.4); }
+    .engine-option.selected {
+      border-color: var(--green);
+      background: var(--green-dim);
+    }
+    .engine-option input[type="radio"] { accent-color: var(--green); width: 16px; height: 16px; }
+    .engine-label { flex: 1; }
+    .engine-label strong { font-size: 14px; font-weight: 600; display: block; }
+    .engine-label span { font-size: 12px; color: var(--muted); }
+    .engine-add { color: var(--green); font-size: 13px; font-weight: 700; }
+
+    /* ── Accessories ── */
+    .acc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .acc-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 14px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .acc-item:hover { border-color: rgba(93,252,110,0.4); }
+    .acc-item.selected { border-color: var(--green); background: var(--green-dim); }
+    .acc-item input[type="checkbox"] { accent-color: var(--green); width: 16px; height: 16px; }
+    .acc-name { flex: 1; font-size: 13px; font-weight: 500; }
+    .acc-price { font-size: 12px; color: var(--green); font-weight: 700; }
+
+    /* ── Summary card ── */
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      position: sticky;
+      top: 80px;
+    }
+    .summary-card h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      color: var(--green);
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .summary-row:last-of-type { border-bottom: none; }
+    .summary-row .label { color: var(--muted); }
+    .summary-row .value { font-weight: 600; }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px solid var(--green);
+    }
+    .total-row .total-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .total-row .total-price {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--green);
+    }
+    .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+
+    /* ── Storage status ── */
+    .storage-status {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 13px;
+      margin-top: 14px;
+    }
+    .storage-status .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .storage-status .status-row:last-child { margin-bottom: 0; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot.green { background: var(--green); }
+    .dot.grey  { background: var(--muted); }
+
+    /* ── Section label ── */
+    .config-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
+
+    /* ── Session tracker ── */
+    .session-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-top: 32px;
+    }
+    .session-box h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .session-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .session-tag {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    .session-note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+    /* ── Saved toast ── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: var(--green);
+      color: #000;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: .5px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .3s, transform .3s;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<header class="site-header">
+  <nav class="navbar">
+    <a class="brand" href="Home.html">JEEP<span class="reg">®</span></a>
+    <ul class="nav-links">
+      <li><a href="Home.html">Home</a></li>
+      <li class="dropdown">
+        <a href="models.html">Models ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="models.html#wrangler">Wrangler</a></li>
+          <li><a href="models.html#cherokee">Grand Cherokee</a></li>
+          <li><a href="models.html#compass">Compass</a></li>
+        </ul>
+      </li>
+      <li><a href="prices.html">Prices</a></li>
+      <li><a href="Media.html">Media</a></li>
+      <li><a href="SignUp.html">Sign Up</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="oop.html">OOP</a></li>
+      <li><a class="active" href="builder.html">Build</a></li>
+    </ul>
+    <button class="nav-btn" id="navToggle" aria-label="Toggle menu">☰</button>
+  </nav>
+</header>
+
+<!-- ── PAGE HERO ── -->
+<section class="page-hero">
+  <div class="wrap">
+    <h1 class="page-title">Build Your Jeep</h1>
+    <p class="page-subtitle">Configure your dream Jeep — your build is saved automatically and loads back when you return.</p>
+  </div>
+</section>
+
+<!-- ── MAIN CONTENT ── -->
+<section class="section">
+  <div class="wrap">
+    <div class="split" style="gap:40px; align-items:start">
+
+      <!-- LEFT: Config options -->
+      <div style="display:flex; flex-direction:column; gap:28px;">
+
+        <!-- Model -->
+        <div>
+          <p class="config-label">1. Choose a Model</p>
+          <p class="muted small">Select the Jeep that fits your lifestyle.</p>
+          <div class="model-grid" id="modelGrid">
+            <div class="model-card" data-model="Wrangler" data-base="34000">
+              <span class="model-emoji">🚙</span>
+              <div class="model-label">Wrangler</div>
+              <div class="model-price">From $34,000</div>
+            </div>
+            <div class="model-card" data-model="Grand Cherokee" data-base="40000">
+              <span class="model-emoji">🚗</span>
+              <div class="model-label">Grand Cherokee</div>
+              <div class="model-price">From $40,000</div>
+            </div>
+            <div class="model-card" data-model="Compass" data-base="28500">
+              <span class="model-emoji">🛻</span>
+              <div class="model-label">Compass</div>
+              <div class="model-price">From $28,500</div>
+            </div>
+            <div class="model-card" data-model="Gladiator" data-base="51000">
+              <span class="model-emoji">🚚</span>
+              <div class="model-label">Gladiator</div>
+              <div class="model-price">From $51,000</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Color -->
+        <div>
+          <p class="config-label">2. Choose a Color</p>
+          <p class="muted small">Some colors carry a premium.</p>
+          <div class="color-grid" id="colorGrid">
+            <div class="swatch selected" data-color="Granite Black"   data-add="0"   title="Granite Black"   style="background:#1a1a1a"></div>
+            <div class="swatch"          data-color="Bright White"    data-add="0"   title="White"           style="background:#f5f5f5"></div>
+            <div class="swatch"          data-color="Military Green"  data-add="395" title="Military Green"  style="background:#4a5e3a"></div>
+            <div class="swatch"          data-color="Firecracker Red" data-add="395" title="Firecracker Red" style="background:#c0392b"></div>
+            <div class="swatch"          data-color="Silver Zynith"   data-add="0"   title="Silver Zynith"   style="background:#c0c0c0"></div>
+            <div class="swatch"          data-color="Hydro Blue"      data-add="395" title="Hydro Blue"      style="background:#1a5f7a"></div>
+          </div>
+        </div>
+
+        <!-- Engine -->
+        <div>
+          <p class="config-label">3. Choose an Engine</p>
+          <p class="muted small">More power, more possibilities.</p>
+          <div class="engine-options" id="engineOptions">
+            <label class="engine-option selected">
+              <input type="radio" name="engine" value="2.0L Turbo" data-add="0" checked/>
+              <div class="engine-label">
+                <strong>2.0L Turbo 4-Cyl</strong>
+                <span>270 HP &nbsp;|&nbsp; 295 lb-ft torque</span>
+              </div>
+              <span class="engine-add">Included</span>
+            </label>
+            <label class="engine-option">
+              <input type="radio" name="engine" value="3.6L V6" data-add="2500"/>
+              <div class="engine-label">
+                <strong>3.6L V6 Pentastar</strong>
+                <span>285 HP &nbsp;|&nbsp; 260 lb-ft torque</span>
+              </div>
+              <span class="engine-add">+$2,500</span>
+            </label>
+            <label class="engine-option">
+              <input type="radio" name="engine" value="4xe Hybrid" data-add="8000"/>
+              <div class="engine-label">
+                <strong>4xe Plug-in Hybrid</strong>
+                <span>375 HP &nbsp;|&nbsp; 470 lb-ft torque</span>
+              </div>
+              <span class="engine-add">+$8,000</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Accessories -->
+        <div>
+          <p class="config-label">4. Add Accessories</p>
+          <p class="muted small">Personalise your build with official Jeep accessories.</p>
+          <div class="acc-grid" id="accGrid">
+            <label class="acc-item"><input type="checkbox" data-acc="Roof Rack"      data-add="500"/>  <span class="acc-name">Roof Rack</span>      <span class="acc-price">+$500</span></label>
+            <label class="acc-item"><input type="checkbox" data-acc="Tow Hitch"      data-add="300"/>  <span class="acc-name">Tow Hitch</span>      <span class="acc-price">+$300</span></label>
+            <label class="acc-item"><input type="checkbox" data-acc="Off-Road Tires" data-add="800"/>  <span class="acc-name">Off-Road Tires</span> <span class="acc-price">+$800</span></label>
+            <label class="acc-item"><input type="checkbox" data-acc="Premium Audio"  data-add="1200"/> <span class="acc-name">Premium Audio</span>  <span class="acc-price">+$1,200</span></label>
+            <label class="acc-item"><input type="checkbox" data-acc="Sunroof"        data-add="1500"/> <span class="acc-name">Sunroof</span>        <span class="acc-price">+$1,500</span></label>
+            <label class="acc-item"><input type="checkbox" data-acc="LED Light Bar"  data-add="900"/>  <span class="acc-name">LED Light Bar</span>  <span class="acc-price">+$900</span></label>
+          </div>
+        </div>
+
+        <!-- Session tracker -->
+        <div class="session-box">
+          <h3>⏱ Viewed This Session</h3>
+          <div class="session-tags" id="sessionTags">
+            <span style="color:var(--muted);font-size:13px">No models selected yet.</span>
+          </div>
+          <p class="session-note">Tracked with <strong>sessionStorage</strong> — clears when you close the tab.</p>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Summary -->
+      <div>
+        <div class="summary-card">
+          <h3>Your Build</h3>
+
+          <div class="summary-row">
+            <span class="label">Model</span>
+            <span class="value" id="sumModel">—</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Color</span>
+            <span class="value" id="sumColor">Granite Black</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Engine</span>
+            <span class="value" id="sumEngine">2.0L Turbo 4-Cyl</span>
+          </div>
+          <div class="summary-row">
+            <span class="label">Accessories</span>
+            <span class="value" id="sumAcc">None</span>
+          </div>
+
+          <div class="total-row">
+            <span class="total-label">Total</span>
+            <span class="total-price" id="sumTotal">$—</span>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn" id="btnSave">💾 Save My Build</button>
+            <button class="btn btn-ghost" id="btnLoad">📂 Load Saved Build</button>
+            <button class="btn btn-ghost" id="btnClear" style="color:var(--red);border-color:rgba(255,91,91,0.3)">🗑 Clear Saved Build</button>
+          </div>
+
+          <div class="storage-status" id="storageStatus">
+            <div class="status-row">
+              <div class="dot grey" id="localDot"></div>
+              <span id="localStatus">No build saved in localStorage</span>
+            </div>
+            <div class="status-row">
+              <div class="dot grey" id="sessionDot"></div>
+              <span id="sessionStatus">Session active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© 2026 Jeep® Project</p>
+    <a class="link" href="#top">Back to top ↑</a>
+  </div>
+</footer>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   BUILD YOUR JEEP — Web Storage Demo
+   localStorage  → saves build permanently across sessions
+   sessionStorage → tracks models viewed in current tab session
+   ============================================================ */
+
+// ── State ──────────────────────────────────────────────────
+const state = {
+  model:    null,
+  basePrice: 0,
+  color:    "Granite Black",
+  colorAdd: 0,
+  engine:   "2.0L Turbo 4-Cyl",
+  engineAdd: 0,
+  accessories: []
+};
+
+// ── Helpers ────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+function fmt(n) {
+  return "$" + n.toLocaleString();
+}
+
+// ── Update summary card ────────────────────────────────────
+function updateSummary() {
+  document.getElementById("sumModel").textContent  = state.model  || "—";
+  document.getElementById("sumColor").textContent  = state.color;
+  document.getElementById("sumEngine").textContent = state.engine;
+  document.getElementById("sumAcc").textContent    = state.accessories.length
+    ? state.accessories.join(", ")
+    : "None";
+
+  if (state.model) {
+    const accTotal = state.accessories.reduce((sum, name) => {
+      const el = document.querySelector(`[data-acc="${name}"]`);
+      return sum + (el ? parseInt(el.dataset.add) : 0);
+    }, 0);
+    const total = state.basePrice + state.colorAdd + state.engineAdd + accTotal;
+    document.getElementById("sumTotal").textContent = fmt(total);
+  } else {
+    document.getElementById("sumTotal").textContent = "$—";
+  }
+}
+
+// ── Update localStorage status indicator ───────────────────
+function updateStorageStatus() {
+  const saved = localStorage.getItem("jeepBuild");
+  const dot    = document.getElementById("localDot");
+  const status = document.getElementById("localStatus");
+  if (saved) {
+    const b = JSON.parse(saved);
+    dot.className    = "dot green";
+    status.textContent = `localStorage: "${b.model}" build saved`;
+  } else {
+    dot.className    = "dot grey";
+    status.textContent = "No build saved in localStorage";
+  }
+}
+
+// ── Update sessionStorage tracker ─────────────────────────
+function updateSessionTracker() {
+  const raw     = sessionStorage.getItem("viewedModels");
+  const viewed  = raw ? JSON.parse(raw) : [];
+  const dot     = document.getElementById("sessionDot");
+  const status  = document.getElementById("sessionStatus");
+  const tagsEl  = document.getElementById("sessionTags");
+
+  dot.className    = "dot green";
+  status.textContent = `sessionStorage: ${viewed.length} model(s) viewed`;
+
+  if (viewed.length === 0) {
+    tagsEl.innerHTML = '<span style="color:var(--muted);font-size:13px">No models selected yet.</span>';
+  } else {
+    tagsEl.innerHTML = viewed
+      .map(m => `<span class="session-tag">${m}</span>`)
+      .join("");
+  }
+}
+
+function trackModelInSession(model) {
+  const raw    = sessionStorage.getItem("viewedModels");
+  const viewed = raw ? JSON.parse(raw) : [];
+  if (!viewed.includes(model)) {
+    viewed.push(model);
+    sessionStorage.setItem("viewedModels", JSON.stringify(viewed));
+  }
+  updateSessionTracker();
+}
+
+// ── Model cards ────────────────────────────────────────────
+document.querySelectorAll(".model-card").forEach(card => {
+  card.addEventListener("click", () => {
+    document.querySelectorAll(".model-card").forEach(c => c.classList.remove("selected"));
+    card.classList.add("selected");
+    state.model     = card.dataset.model;
+    state.basePrice = parseInt(card.dataset.base);
+    trackModelInSession(state.model);   // sessionStorage
+    updateSummary();
+  });
+});
+
+// ── Color swatches ─────────────────────────────────────────
+document.querySelectorAll(".swatch").forEach(sw => {
+  sw.addEventListener("click", () => {
+    document.querySelectorAll(".swatch").forEach(s => s.classList.remove("selected"));
+    sw.classList.add("selected");
+    state.color    = sw.dataset.color;
+    state.colorAdd = parseInt(sw.dataset.add);
+    updateSummary();
+  });
+});
+
+// ── Engine radio buttons ────────────────────────────────────
+document.querySelectorAll(".engine-option").forEach(opt => {
+  opt.addEventListener("click", () => {
+    document.querySelectorAll(".engine-option").forEach(o => o.classList.remove("selected"));
+    opt.classList.add("selected");
+    const radio      = opt.querySelector("input[type='radio']");
+    radio.checked    = true;
+    state.engine     = radio.value;
+    state.engineAdd  = parseInt(radio.dataset.add);
+    updateSummary();
+  });
+});
+
+// ── Accessories checkboxes ─────────────────────────────────
+document.querySelectorAll(".acc-item input[type='checkbox']").forEach(cb => {
+  cb.addEventListener("change", () => {
+    const item = cb.closest(".acc-item");
+    const name = cb.dataset.acc;
+    if (cb.checked) {
+      item.classList.add("selected");
+      if (!state.accessories.includes(name)) state.accessories.push(name);
+    } else {
+      item.classList.remove("selected");
+      state.accessories = state.accessories.filter(a => a !== name);
+    }
+    updateSummary();
+  });
+});
+
+// ── SAVE to localStorage ───────────────────────────────────
+document.getElementById("btnSave").addEventListener("click", () => {
+  if (!state.model) {
+    showToast("⚠️ Please choose a model first!");
+    return;
+  }
+  const accTotal = state.accessories.reduce((sum, name) => {
+    const el = document.querySelector(`[data-acc="${name}"]`);
+    return sum + (el ? parseInt(el.dataset.add) : 0);
+  }, 0);
+  const total = state.basePrice + state.colorAdd + state.engineAdd + accTotal;
+
+  const build = {
+    model:       state.model,
+    basePrice:   state.basePrice,
+    color:       state.color,
+    colorAdd:    state.colorAdd,
+    engine:      state.engine,
+    engineAdd:   state.engineAdd,
+    accessories: state.accessories,
+    total:       total,
+    savedAt:     new Date().toLocaleString()
+  };
+
+  localStorage.setItem("jeepBuild", JSON.stringify(build));
+  updateStorageStatus();
+  showToast("✅ Build saved to localStorage!");
+});
+
+// ── LOAD from localStorage ─────────────────────────────────
+document.getElementById("btnLoad").addEventListener("click", () => {
+  const raw = localStorage.getItem("jeepBuild");
+  if (!raw) {
+    showToast("⚠️ No saved build found!");
+    return;
+  }
+  const b = JSON.parse(raw);
+
+  // Restore state
+  state.model       = b.model;
+  state.basePrice   = b.basePrice;
+  state.color       = b.color;
+  state.colorAdd    = b.colorAdd;
+  state.engine      = b.engine;
+  state.engineAdd   = b.engineAdd;
+  state.accessories = b.accessories || [];
+
+  // Restore model card
+  document.querySelectorAll(".model-card").forEach(c => {
+    c.classList.toggle("selected", c.dataset.model === b.model);
+  });
+
+  // Restore color swatch
+  document.querySelectorAll(".swatch").forEach(s => {
+    s.classList.toggle("selected", s.dataset.color === b.color);
+  });
+
+  // Restore engine
+  document.querySelectorAll(".engine-option").forEach(opt => {
+    const radio = opt.querySelector("input[type='radio']");
+    const match = radio.value === b.engine;
+    opt.classList.toggle("selected", match);
+    radio.checked = match;
+  });
+
+  // Restore accessories
+  document.querySelectorAll(".acc-item input[type='checkbox']").forEach(cb => {
+    const checked = b.accessories.includes(cb.dataset.acc);
+    cb.checked = checked;
+    cb.closest(".acc-item").classList.toggle("selected", checked);
+  });
+
+  updateSummary();
+  showToast(`📂 Loaded: ${b.model} build from ${b.savedAt}`);
+});
+
+// ── CLEAR localStorage ─────────────────────────────────────
+document.getElementById("btnClear").addEventListener("click", () => {
+  localStorage.removeItem("jeepBuild");
+  updateStorageStatus();
+  showToast("🗑 Saved build cleared.");
+});
+
+// ── Init ───────────────────────────────────────────────────
+updateStorageStatus();
+updateSessionTracker();
+updateSummary();
+</script>
+
+<script src="JavaScript.js"></script>
+</body>
+</html>
