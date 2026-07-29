@@ -1,0 +1,681 @@
+/* =========================
+   FONTS
+========================= */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&family=Pacifico&display=swap');
+
+/* =========================
+   RESET
+========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  background: #000;
+  color: #e5e5e5;
+}
+
+/* =========================
+   NAVBAR
+========================= */
+.navbar, nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  padding: 15px 25px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: rgba(0,0,0,0.9);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  z-index: 1000;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
+}
+
+.back-btn {
+  color: #aaa;
+  text-decoration: none;
+}
+
+.back-btn:hover {
+  color: white;
+}
+
+/* =========================
+   HERO
+========================= */
+.hero {
+  margin-top: 100px;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.hero h1 {
+  font-size: 50px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+
+.hero p {
+  color: #aaa;
+  margin-top: 10px;
+}
+
+/* =========================
+   PRODUCTS
+========================= */
+#products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+  padding: 40px;
+}
+
+/* =========================
+   FAVORITES GRID (FIXED)
+========================= */
+#favoritesContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 25px;
+  padding: 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* =========================
+   PRODUCT CARD
+========================= */
+.product {
+  background: rgba(20,20,20,0.9);
+  border-radius: 16px;
+  padding: 15px;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.product:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow:
+    0 10px 30px rgba(255,255,255,0.08),
+    0 0 40px rgba(255,255,255,0.05);
+}
+
+.product::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.15),
+    transparent
+  );
+  transform: rotate(25deg);
+  opacity: 0;
+  transition: 0.5s;
+}
+
+.product:hover::before {
+  opacity: 1;
+  left: 100%;
+  transition: 0.7s;
+}
+
+.product img {
+  width: 100%;
+  height: 160px;
+  object-fit: contain;
+}
+
+.product h2 {
+  font-size: 16px;
+  margin-bottom: 5px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.product p {
+  color: #aaa;
+}
+
+.product button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+.product button:hover {
+  background: white;
+  color: black;
+}
+
+/* =========================
+   TAG
+========================= */
+.tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #aaa;
+  letter-spacing: 1px;
+}
+
+/* =========================
+   HEART
+========================= */
+.heart {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.heart.active {
+  color: white;
+  text-shadow: 0 0 10px rgba(255,255,255,0.6);
+}
+
+/* =========================
+   AUTH (LOGIN)
+========================= */
+.center-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.auth-box {
+  background: #111;
+  padding: 30px;
+  border-radius: 16px;
+  width: 300px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.auth-box h2 {
+  margin-bottom: 20px;
+}
+
+.auth-box input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #000;
+  color: white;
+}
+
+.auth-box div {
+  margin: 10px 0;
+}
+
+.auth-box button {
+  margin-top: 10px;
+}
+
+/* =========================
+   AUTH BUTTON
+========================= */
+.auth-btn {
+  display: block;
+  width: 180px;
+  margin: 10px auto;
+  padding: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.auth-btn:hover {
+  background: white;
+  color: black;
+  box-shadow: 0 0 15px rgba(255,255,255,0.6);
+  transform: translateY(-2px);
+}
+
+.auth-btn:active {
+  transform: scale(0.95);
+}
+
+/* =========================
+   SWITCH LINK
+========================= */
+.switch .link {
+  color: white;
+  cursor: pointer;
+  position: relative;
+}
+
+.switch .link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0%;
+  height: 1px;
+  background: white;
+  transition: 0.3s;
+}
+
+.switch .link:hover::after {
+  width: 100%;
+}
+
+/* =========================
+   CART
+========================= */
+.checkout-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 20px;
+  border-radius: 10px;
+  border: 1px solid white;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+.checkout-btn:hover {
+  background: white;
+  color: black;
+}
+
+/* =========================
+   NAV BUTTONS
+========================= */
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  backdrop-filter: blur(6px);
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.nav-btn i {
+  font-size: 16px;
+}
+
+.nav-btn:hover {
+  background: rgba(255,255,255,0.1);
+  box-shadow:
+    0 0 10px rgba(255,255,255,0.3),
+    0 0 25px rgba(255,255,255,0.2);
+  transform: translateY(-2px);
+}
+
+.nav-btn:active {
+  transform: scale(0.96);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#cart {
+  background: white;
+  color: black;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  margin-left: 6px;
+}
+
+/* =========================
+   SEARCH BOX
+========================= */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2);
+  backdrop-filter: blur(6px);
+  transition: 0.25s;
+}
+
+.search-box i {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.search-box input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  width: 180px;
+  font-size: 14px;
+}
+
+.search-box input::placeholder {
+  color: #777;
+}
+
+.search-box:hover,
+.search-box:focus-within {
+  border-color: white;
+  box-shadow:
+    0 0 10px rgba(255,255,255,0.2),
+    0 0 20px rgba(255,255,255,0.1);
+}
+
+/* =========================
+   NAVBAR GLOW
+========================= */
+.navbar::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -12px;
+  width: 70%;
+  height: 25px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255,255,255,0.25),
+    transparent 70%
+  );
+  filter: blur(12px);
+}
+
+/* =========================
+   FOOTER
+========================= */
+.footer {
+  margin-top: 80px;
+  padding: 60px 20px;
+  text-align: center;
+  background: #050505;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.footer-title {
+  font-size: 28px;
+  color: white;
+}
+
+.footer-sub {
+  color: #888;
+  margin: 10px 0 20px;
+}
+
+.divider {
+  width: 80px;
+  height: 1px;
+  margin: 20px auto;
+  background: rgba(255,255,255,0.2);
+}
+
+.footer-section {
+  margin-top: 20px;
+}
+
+.footer-section h3 {
+  color: white;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: #888;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.footer-links a:hover {
+  color: white;
+}
+
+.footer-links span {
+  color: #444;
+}
+
+.socials span {
+  color: #666;
+  margin: 0 5px;
+}
+
+/* =========================
+   DISCORD BUTTON
+========================= */
+.discord-btn {
+  display: inline-block;
+  margin-top: 30px;
+  padding: 12px 28px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.discord-btn:hover {
+  transform: translateY(-4px) scale(1.05);
+  background: #fff;
+  color: #000;
+  box-shadow:
+    0 0 20px rgba(255,255,255,0.6),
+    0 0 40px rgba(255,255,255,0.3);
+}
+
+.discord-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.6),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.discord-btn:hover::before {
+  left: 100%;
+}
+
+.discord-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 10px rgba(255,255,255,0.4);
+}
+
+/* =========================
+   BACKGROUND GLOW
+========================= */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(255,255,255,0.05), transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03), transparent 60%);
+  filter: blur(80px);
+}
+
+/* =========================
+   FLOATING PARTICLES
+========================= */
+.particles-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.particles-bg span {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 50%;
+  animation: floatUp 10s linear infinite;
+  opacity: 0;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(100vh) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-10vh) scale(1);
+    opacity: 0;
+  }
+}
+
+/* =========================
+   CURSOR GLOW
+========================= */
+.cursor-glow {
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  filter: blur(40px);
+}
+
+/* =========================
+   ASTEROIDS
+========================= */
+.asteroids {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.asteroids span {
+  position: absolute;
+  bottom: -100px;
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle at 30% 30%, #fff, #888 40%, #111 70%);
+  border-radius: 50%;
+  opacity: 0.15;
+  filter: blur(1px);
+  animation: asteroidFloat linear infinite;
+}
+
+@keyframes asteroidFloat {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(0.8);
+  }
+  50% {
+    transform: translateY(-50vh) translateX(30px) rotate(180deg) scale(1);
+  }
+  100% {
+    transform: translateY(-120vh) translateX(-40px) rotate(360deg) scale(0.9);
+  }
+}
+
+.asteroids span:nth-child(2) { width: 40px; height: 40px; }
+.asteroids span:nth-child(3) { width: 80px; height: 80px; }
+.asteroids span:nth-child(4) { width: 30px; height: 30px; }
+.asteroids span:nth-child(5) { width: 70px; height: 70px; }
+
+/* =========================
+   SPINNER
+========================= */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: spin 0.8s linear infinite;
+  opacity: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.auth-btn.loading .btn-text {
+  opacity: 0;
+}
+
+.auth-btn.loading .spinner {
+  opacity: 1;
+}
